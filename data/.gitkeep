@@ -1,0 +1,1 @@
+# SQLite 数据库存放目录（chore.db 由服务启动时自动创建，已被 .gitignore 忽略）

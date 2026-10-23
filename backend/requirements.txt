@@ -1,0 +1,6 @@
+# Web 框架与服务
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# 中文转带声调拼音（家长后台自动生成 pinyin 字段）
+pypinyin>=0.51.0

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# SQLite 数据文件（种子数据会自动重建，不入库）
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# 系统 / 编辑器
+.DS_Store
+.idea/
+.vscode/
