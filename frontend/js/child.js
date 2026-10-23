@@ -1,4 +1,9 @@
-/** 儿童端 · 打卡页逻辑：加载家务、勾选/计数、实时金额、一键提交。 */
+/** 儿童端 · 打卡页逻辑：加载家务、单次勾选、实时金额、一键提交。
+ *
+ * 交互模型：一次勾选 = 打卡 1 次；同一家务一天内可在不同时间多次打卡
+ * （每次重新勾选、提交），能否继续打由 remain_today 决定；
+ * 今日完成次数实时显示在卡片左上角徽章。
+ */
 import { api } from "./api.js";
 import { fmtMoney, toast, popBonus } from "./common.js";
 import { loadBank } from "./bank.js";
@@ -6,7 +11,7 @@ import { loadBank } from "./bank.js";
 const state = {
   tasks: [],
   todayTotal: 0,
-  selected: new Map(),   // task_id -> quantity（本次勾选）
+  selected: new Set(),   // 本次勾选的 task_id 集合（每项计 1 次）
 };
 
 const grid = document.getElementById("task-grid");
@@ -25,7 +30,7 @@ async function loadAll() {
   state.tasks = taskRes.tasks;
   state.todayTotal = todayRes.total;
   // 任务可能被家长下架，同步清掉失效勾选
-  for (const id of [...state.selected.keys()]) {
+  for (const id of [...state.selected]) {
     if (!byId(id)) state.selected.delete(id);
   }
   render();
@@ -34,10 +39,10 @@ async function loadAll() {
 /* ---------- 渲染 ---------- */
 
 function cardHTML(t) {
-  const qty = state.selected.get(t.id) || 0;
-  const remain = t.remain_today;                 // null = 不限次数
-  const full = remain !== null && remain <= 0;
-  const on = qty > 0;
+  const on = state.selected.has(t.id);
+  const limit = t.daily_limit;                    // null = 不限次数
+  const full = t.remain_today !== null && t.remain_today <= 0;
+  const done = t.done_today || 0;
 
   const tone = full
     ? "bg-gray-100 opacity-60 cursor-not-allowed"
@@ -45,29 +50,23 @@ function cardHTML(t) {
       ? "bg-emerald-50 ring-4 ring-emerald-400 shadow-lg"
       : "bg-white shadow-md hover:shadow-lg active:scale-95 cursor-pointer";
 
-  const badgeFull = full
-    ? `<span class="absolute top-2 left-2 bg-gray-200 text-gray-500 text-xs font-bold px-2 py-1 rounded-full">✅ 今日完成</span>` : "";
+  // 左上角：今日完成次数徽章（做了才有；满了变灰 + ✅）
+  const badge = done > 0
+    ? `<span class="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap
+                    ${full ? "bg-gray-200 text-gray-500" : "bg-amber-100 text-amber-600"}">
+         ${full ? "✅" : ""}今日完成 ${limit ? `${done}/${limit}` : done} 次
+       </span>` : "";
   const check = on
     ? `<span class="absolute top-2 right-2 w-8 h-8 rounded-full bg-emerald-500 text-white text-lg font-black flex items-center justify-center">✓</span>` : "";
-  const doneTip = !full && t.done_today > 0
-    ? `<div class="text-xs text-amber-500 font-bold mt-1">jīn rì yǐ zuò · 今日已做 ${t.done_today} 次</div>` : "";
-  const stepper = on && (remain === null || remain > 1)
-    ? `<div class="flex items-center gap-3 mt-2">
-         <button data-action="minus" class="w-11 h-11 rounded-full bg-white ring-2 ring-emerald-300 text-2xl font-bold text-emerald-600 active:scale-90 transition">−</button>
-         <span class="text-2xl font-black text-emerald-600">${qty}</span>
-         <button data-action="plus" ${(remain !== null && qty >= remain) ? "disabled" : ""}
-           class="w-11 h-11 rounded-full bg-white ring-2 ring-emerald-300 text-2xl font-bold text-emerald-600 active:scale-90 transition disabled:opacity-30">＋</button>
-       </div>` : "";
 
   return `
   <div class="task-card relative rounded-3xl p-3 sm:p-4 flex flex-col items-center text-center transition-all duration-150 ${tone}"
        data-id="${t.id}">
-    ${badgeFull}${check}
-    <div class="text-6xl sm:text-7xl mt-1">${t.icon}</div>
+    ${badge}${check}
+    <div class="text-6xl sm:text-7xl mt-4">${t.icon}</div>
     <div class="text-sm sm:text-base text-gray-400 mt-1">${t.pinyin}</div>
     <div class="text-2xl sm:text-3xl font-extrabold text-gray-800">${t.name}</div>
     <div class="text-lg sm:text-xl font-bold text-amber-500 mt-1">${fmtMoney(t.price)} 元<span class="text-sm text-gray-400">/次</span></div>
-    ${doneTip}${stepper}
   </div>`;
 }
 
@@ -88,9 +87,9 @@ function render(popId = null) {
 
 function updateSummary() {
   let pending = 0;
-  for (const [id, q] of state.selected) {
+  for (const id of state.selected) {
     const t = byId(id);
-    if (t) pending += q * t.price;
+    if (t) pending += t.price;
   }
   todayTotalEl.textContent = fmtMoney(state.todayTotal);
   if (pending > 0) {
@@ -107,20 +106,6 @@ function updateSummary() {
 
 /* ---------- 交互 ---------- */
 
-function setQty(id, qty) {
-  const t = byId(id);
-  if (!t) return;
-  const remain = t.remain_today;
-  if (qty <= 0) {
-    state.selected.delete(id);
-    render();
-    return;
-  }
-  if (remain !== null) qty = Math.min(qty, remain);
-  state.selected.set(id, qty);
-  render(id);
-}
-
 function shakeCard(card) {
   card.classList.add("shake");
   setTimeout(() => card.classList.remove("shake"), 350);
@@ -132,30 +117,19 @@ grid.addEventListener("click", (e) => {
   const id = Number(card.dataset.id);
   const t = byId(id);
   if (!t) return;
-  const action = e.target.closest("[data-action]");
-  const qty = state.selected.get(id) || 0;
-  const remain = t.remain_today;
-  const full = remain !== null && remain <= 0;
 
-  if (action) {                          // 步进器
-    if (action.dataset.action === "plus") {
-      if (remain === null || qty < remain) setQty(id, qty + 1);
-      else shakeCard(card);
-    } else {
-      setQty(id, qty - 1);
-    }
+  if (t.remain_today !== null && t.remain_today <= 0) {
+    shakeCard(card);            // 今日额度已用完：轻晃提示
     return;
   }
-  if (full) {                            // 已完成的卡片：轻晃提示
-    shakeCard(card);
-    return;
-  }
-  setQty(id, qty > 0 ? 0 : 1);           // 点卡片主体：勾选 / 取消
+  if (state.selected.has(id)) state.selected.delete(id);
+  else state.selected.add(id);  // 勾选 / 取消（每次 1 次）
+  render(id);
 });
 
 submitBtn.addEventListener("click", async () => {
   if (state.selected.size === 0 || submitBtn.disabled) return;
-  const items = [...state.selected].map(([task_id, quantity]) => ({ task_id, quantity }));
+  const items = [...state.selected].map((task_id) => ({ task_id, quantity: 1 }));
   submitBtn.disabled = true;
   submitBtn.textContent = "tí jiāo zhōng · 提交中…";
   try {
