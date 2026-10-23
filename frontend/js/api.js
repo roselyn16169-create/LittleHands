@@ -29,4 +29,7 @@ export const api = {
   tasks: () => request("GET", "/api/tasks"),
   today: () => request("GET", "/api/records/today"),
   submit: (items) => request("POST", "/api/records/submit", { items }),
+  summary: () => request("GET", "/api/records/summary"),
+  history: (month) => request("GET", `/api/records/history${month ? `?month=${month}` : ""}`),
+  day: (date) => request("GET", `/api/records?date=${date}`),
 };

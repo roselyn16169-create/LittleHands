@@ -43,10 +43,42 @@
       <div id="task-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"></div>
       <p id="empty-tip" class="hidden text-center text-xl text-gray-400 py-16">家长还没有添加家务哦～</p>
     </section>
-    <section id="view-bank" class="hidden text-center py-20">
-      <div class="text-7xl mb-4">🐷</div>
-      <p class="text-2xl font-bold text-amber-600">xiǎo jīn kù · 小金库</p>
-      <p class="mt-2 text-gray-400">将在第 5 步开发</p>
+    <section id="view-bank" class="hidden">
+      <!-- 汇总：累计总收入 + 三小格 -->
+      <div class="rounded-3xl bg-gradient-to-br from-pink-400 to-rose-400 text-white p-5 shadow-lg">
+        <div class="text-sm opacity-90">lěi jì zǒng shōu rù · 累计总收入</div>
+        <div class="text-5xl font-black mt-1">¥ <span id="bank-grand">0</span></div>
+        <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+          <div class="bg-white/20 rounded-2xl py-2">
+            <div class="text-xs opacity-90">jīn rì · 今日</div>
+            <div class="text-xl font-extrabold">¥<span id="bank-today">0</span></div>
+          </div>
+          <div class="bg-white/20 rounded-2xl py-2">
+            <div class="text-xs opacity-90">běn yuè · 本月</div>
+            <div class="text-xl font-extrabold">¥<span id="bank-month">0</span></div>
+          </div>
+          <div class="bg-white/20 rounded-2xl py-2">
+            <div class="text-xs opacity-90">dǎ kǎ tiān shù · 打卡天数</div>
+            <div class="text-xl font-extrabold"><span id="bank-days">0</span> 天</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 今日明细 -->
+      <h2 class="mt-6 mb-2 text-xl font-extrabold text-gray-700">📋 jīn rì míng xì · 今日明细</h2>
+      <div id="bank-today-list" class="bg-white rounded-3xl shadow divide-y divide-amber-50 overflow-hidden"></div>
+
+      <!-- 每日打卡记录 -->
+      <div class="mt-6 mb-2 flex items-center justify-between">
+        <h2 class="text-xl font-extrabold text-gray-700">📅 měi rì jì lù · 每日打卡记录</h2>
+        <span class="text-amber-500 font-bold">本月 ¥<span id="bank-hist-month-total">0</span></span>
+      </div>
+      <div class="flex items-center justify-between bg-white rounded-2xl shadow px-4 py-1.5 mb-3">
+        <button id="month-prev" class="w-12 h-12 rounded-full text-3xl font-bold text-pink-500 active:scale-90 transition">‹</button>
+        <div id="month-label" class="text-xl font-extrabold text-gray-700"></div>
+        <button id="month-next" class="w-12 h-12 rounded-full text-3xl font-bold text-pink-500 active:scale-90 transition disabled:opacity-30">›</button>
+      </div>
+      <div id="bank-history-list" class="space-y-2 pb-4"></div>
     </section>
   </main>
 

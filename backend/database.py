@@ -1,4 +1,5 @@
 """SQLite 数据库：连接管理、建表与种子数据初始化。"""
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
@@ -9,7 +10,8 @@ from utils import now_iso
 # 目录定位：backend/database.py 的上一级即项目根目录
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
-DB_PATH = DATA_DIR / "chore.db"
+# 环境变量 CHORE_DB 可指向独立数据库文件（测试/演示时避免污染开发库）
+DB_PATH = Path(os.environ.get("CHORE_DB", DATA_DIR / "chore.db"))
 
 
 def get_conn() -> sqlite3.Connection:
@@ -40,7 +42,7 @@ def db():
 
 def init_db() -> None:
     """建表 + 写入种子数据（幂等：已有数据不会重复插入）。"""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = get_conn()
     try:
         conn.executescript(DDL_SQL)

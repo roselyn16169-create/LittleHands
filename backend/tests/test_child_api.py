@@ -63,8 +63,10 @@ check("补打 1 次恰好到上限，今日累计 2.5 元",
       s == 200 and abs(b["today_total"] - 2.5) < 1e-9, f"{s} {b}")
 
 s, b = call("GET", "/api/records/today")
-check("今日明细 3 条（追加制：每次提交一行）、合计 2.5 元",
-      s == 200 and len(b["items"]) == 3 and abs(b["total"] - 2.5) < 1e-9, f"{s} {b}")
+item7 = next((i for i in b["items"] if i["task_id"] == 7), None)
+check("今日明细按家务聚合（2 项；收拾玩具 2 次提交共 3 回）、合计 2.5 元",
+      s == 200 and len(b["items"]) == 2 and abs(b["total"] - 2.5) < 1e-9
+      and item7 is not None and item7["quantity"] == 3 and item7["times"] == 2, f"{s} {b}")
 
 s, b = call("GET", f"/api/records?date={today}")
 check("按日期查询正常", s == 200 and abs(b["total"] - 2.5) < 1e-9)

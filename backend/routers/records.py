@@ -21,10 +21,17 @@ def _validate_date(s: str) -> str:
 
 
 def _day_detail(conn, date_str: str) -> dict:
-    """某一天明细 + 合计（today 与 ?date= 共用）。"""
+    """某一天明细 + 合计（today 与 ?date= 共用）。
+
+    同一家务当天的多次打卡聚合为一行：quantity/amount 为合计，
+    times 为提交次数；名称/图标/单价取该家务最新一次的快照。
+    """
     rows = conn.execute(
-        """SELECT id, task_id, task_name, task_icon, price, quantity, amount, created_at
-           FROM daily_records WHERE record_date = ? ORDER BY id""",
+        """SELECT task_id, task_name, task_icon, price,
+                  SUM(quantity) AS quantity, SUM(amount) AS amount,
+                  COUNT(*) AS times, MAX(created_at) AS created_at
+           FROM daily_records WHERE record_date = ?
+           GROUP BY task_id ORDER BY MAX(id)""",
         (date_str,),
     ).fetchall()
     total = conn.execute(
@@ -36,13 +43,13 @@ def _day_detail(conn, date_str: str) -> dict:
         "total": to_yuan(total),
         "items": [
             {
-                "id": r["id"],
                 "task_id": r["task_id"],
                 "name": r["task_name"],       # 快照，不受后续改名影响
                 "icon": r["task_icon"],
                 "price": to_yuan(r["price"]),
                 "quantity": r["quantity"],
                 "amount": to_yuan(r["amount"]),
+                "times": r["times"],
                 "created_at": r["created_at"],
             }
             for r in rows

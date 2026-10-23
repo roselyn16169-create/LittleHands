@@ -1,6 +1,7 @@
 /** 儿童端 · 打卡页逻辑：加载家务、勾选/计数、实时金额、一键提交。 */
 import { api } from "./api.js";
 import { fmtMoney, toast, popBonus } from "./common.js";
+import { loadBank } from "./bank.js";
 
 const state = {
   tasks: [],
@@ -169,7 +170,7 @@ submitBtn.addEventListener("click", async () => {
   }
 });
 
-/* ---------- Tab 切换（小金库第 5 步开发） ---------- */
+/* ---------- Tab 切换 ---------- */
 
 const tabs = document.querySelectorAll(".tab");
 const views = {
@@ -180,6 +181,7 @@ const views = {
 function switchTab(name) {
   for (const [k, v] of Object.entries(views)) v.classList.toggle("hidden", k !== name);
   tabs.forEach((a) => a.classList.toggle("tab-active", a.dataset.tab === name));
+  if (name === "bank") loadBank();   // 每次切到小金库都拉取最新数据
 }
 
 window.addEventListener("hashchange", () => switchTab(location.hash.slice(1) || "checkin"));
