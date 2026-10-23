@@ -52,14 +52,14 @@ CREATE TABLE IF NOT EXISTS settings (
 # 预置 8 项常见家务（price 单位：分；0.5 元 = 50）
 # 默认不限每日次数（一天内可多次打卡），家长可在后台为单项设置上限
 SEED_TASKS = [
-    {"name": "扫地",     "pinyin": "sǎo dì",         "icon": "🧹", "price": 100, "daily_limit": None},
-    {"name": "拖地",     "pinyin": "tuō dì",         "icon": "🪣", "price": 150, "daily_limit": None},
+    {"name": "扫地",     "pinyin": "sǎo dì",         "icon": "🧹", "price": 150, "daily_limit": None},
+    {"name": "拖地",     "pinyin": "tuō dì",         "icon": "🪣", "price": 200, "daily_limit": None},
     {"name": "擦桌子",   "pinyin": "cā zhuō zi",     "icon": "🧽", "price": 50,  "daily_limit": None},
     {"name": "倒垃圾",   "pinyin": "dào lā jī",      "icon": "🗑️", "price": 50,  "daily_limit": None},
     {"name": "叠被子",   "pinyin": "dié bèi zi",     "icon": "🛏️", "price": 100, "daily_limit": None},
-    {"name": "洗碗",     "pinyin": "xǐ wǎn",         "icon": "🍽️", "price": 150, "daily_limit": None},
+    {"name": "洗碗",     "pinyin": "xǐ wǎn",         "icon": "🍽️", "price": 300, "daily_limit": None},
     {"name": "收拾玩具", "pinyin": "shōu shi wán jù", "icon": "🧸", "price": 50,  "daily_limit": None},
-    {"name": "洗衣服",   "pinyin": "xǐ yī fu",       "icon": "🧺", "price": 50,  "daily_limit": None},
+    {"name": "洗衣服",   "pinyin": "xǐ yī fu",       "icon": "🧺", "price": 200,  "daily_limit": None},
 ]
 
 # 默认配置

@@ -55,8 +55,8 @@ call("PUT", "/api/admin/tasks/7", {"daily_limit": 3}, token=TOKEN)
 
 s, b = call("POST", "/api/records/submit",
             {"items": [{"task_id": 1, "quantity": 1}, {"task_id": 7, "quantity": 2}]})
-check("提交 扫地x1 + 收拾玩具x2（共 2.0 元）",
-      s == 200 and abs(b["today_total"] - 2.0) < 1e-9 and abs(b["added_amount"] - 2.0) < 1e-9,
+check("提交 扫地x1 + 收拾玩具x2（共 2.5 元）",
+      s == 200 and abs(b["today_total"] - 2.5) < 1e-9 and abs(b["added_amount"] - 2.5) < 1e-9,
       f"{s} {b}")
 
 s, b = call("GET", "/api/tasks")
@@ -69,30 +69,30 @@ s, b = call("POST", "/api/records/submit", {"items": [{"task_id": 7, "quantity":
 check("超额提交被整体拒绝（400）", s == 400, f"{s} {b}")
 
 s, b = call("POST", "/api/records/submit", {"items": [{"task_id": 7, "quantity": 1}]})
-check("补打 1 次恰好到上限，今日累计 2.5 元",
-      s == 200 and abs(b["today_total"] - 2.5) < 1e-9, f"{s} {b}")
+check("补打 1 次恰好到上限，今日累计 3.0 元",
+      s == 200 and abs(b["today_total"] - 3.0) < 1e-9, f"{s} {b}")
 
 s, b = call("GET", "/api/records/today")
 item7 = next((i for i in b["items"] if i["task_id"] == 7), None)
-check("今日明细按家务聚合（2 项；收拾玩具 2 次提交共 3 回）、合计 2.5 元",
-      s == 200 and len(b["items"]) == 2 and abs(b["total"] - 2.5) < 1e-9
+check("今日明细按家务聚合（2 项；收拾玩具 2 次提交共 3 回）、合计 3.0 元",
+      s == 200 and len(b["items"]) == 2 and abs(b["total"] - 3.0) < 1e-9
       and item7 is not None and item7["quantity"] == 3 and item7["times"] == 2, f"{s} {b}")
 
 s, b = call("GET", f"/api/records?date={today}")
-check("按日期查询正常", s == 200 and abs(b["total"] - 2.5) < 1e-9)
+check("按日期查询正常", s == 200 and abs(b["total"] - 3.0) < 1e-9)
 s, b = call("GET", "/api/records?date=2026-13-99")
 check("非法日期返回 400", s == 400, f"{s} {b}")
 
 s, b = call("GET", "/api/records/history")
-check("按月历史：本月合计 2.5 元、今天 3 条记录共 4 次",
-      s == 200 and abs(b["month_total"] - 2.5) < 1e-9 and b["days"][0]["times"] == 3
+check("按月历史：本月合计 3.0 元、今天 3 条记录共 4 次",
+      s == 200 and abs(b["month_total"] - 3.0) < 1e-9 and b["days"][0]["times"] == 3
       and b["days"][0]["quantity"] == 4, f"{s} {b}")
 
 s, b = call("GET", "/api/records/summary")
-check("汇总：累计 2.5 元、打卡 1 天",
-      s == 200 and abs(b["grand_total"] - 2.5) < 1e-9 and b["checked_days"] == 1, f"{s} {b}")
+check("汇总：累计 3.0 元、打卡 1 天",
+      s == 200 and abs(b["grand_total"] - 3.0) < 1e-9 and b["checked_days"] == 1, f"{s} {b}")
 
-# 不限次数的家务：一天内可多次打卡（拖地 1.5 元，连打 4 次）
+# 不限次数的家务：一天内可多次打卡（拖地 2.0 元，连打 4 次）
 for _ in range(4):
     s, b = call("POST", "/api/records/submit", {"items": [{"task_id": 2, "quantity": 1}]})
 s, b = call("GET", "/api/tasks")
