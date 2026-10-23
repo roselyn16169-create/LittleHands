@@ -1,4 +1,4 @@
-"""家务小助手 —— FastAPI 入口。
+"""LittleHands 小手家务 —— FastAPI 入口。
 
 启动方式（在 backend/ 目录下）：
     ../.venv/bin/uvicorn main:app --reload --port 8000
@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="家务小助手 API",
+    title="LittleHands 小手家务 API",
     version="1.0.0",
     description="儿童家务打卡 / 小金库 / 家长管理后台",
     lifespan=lifespan,

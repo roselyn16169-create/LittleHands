@@ -1,6 +1,6 @@
-# 🧹 家务小助手 chore-helper
+# 🖐️ LittleHands 小手家务
 
-> v1.0.0 · 引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
+> v1.0.0 · 小手也能做大事——引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
 
 ## ✨ 功能亮点
 
@@ -21,8 +21,8 @@
 ## 🚀 快速开始
 
 ```bash
-git clone https://github.com/你的用户名/chore-helper.git
-cd chore-helper/backend
+git clone https://github.com/你的用户名/LittleHands.git
+cd LittleHands/backend
 python3 -m venv ../.venv
 ../.venv/bin/pip install -r requirements.txt
 ../.venv/bin/uvicorn main:app --reload --port 8000
@@ -42,7 +42,7 @@ python3 -m venv ../.venv
 ## 📁 项目结构
 
 ```
-chore-helper/
+LittleHands/
 ├── backend/
 │   ├── main.py               # FastAPI 入口：路由挂载 + 静态托管
 │   ├── database.py           # SQLite 连接/事务/建表/种子
