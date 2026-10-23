@@ -268,10 +268,10 @@ const FIELD_MAP = {
 };
 
 function fmtVal(field, v) {
+  if (field === "daily_limit" && (v === null || v === undefined)) return "不限";
   if (v === null || v === undefined) return "空";
   if (field === "price") return `¥${v}`;
   if (field === "is_active") return v ? "上架" : "下架";
-  if (field === "daily_limit" && v === null) return "不限";
   return String(v);
 }
 

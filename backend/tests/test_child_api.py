@@ -1,4 +1,4 @@
-"""儿童端接口回归测试（第 2 步，11 项断言）。
+"""儿童端接口回归测试（12 项断言）。
 
 独立运行前需先启动服务，例如：
     cd backend && ../.venv/bin/uvicorn main:app --port 8399
@@ -17,10 +17,12 @@ BASE = f"http://127.0.0.1:{PORT}"
 passed, failed = 0, 0
 
 
-def call(method, path, body=None):
+def call(method, path, body=None, token=None):
+    headers = {"Content-Type": "application/json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(BASE + path, data=data, method=method,
-                                 headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(BASE + path, data=data, method=method, headers=headers)
     try:
         with urllib.request.urlopen(req) as resp:
             return resp.status, json.loads(resp.read())
@@ -41,7 +43,15 @@ def check(name, cond, extra=""):
 today = datetime.date.today().isoformat()
 
 s, b = call("GET", "/api/tasks")
-check("GET /api/tasks 返回 8 项上架家务", s == 200 and len(b["tasks"]) == 8, f"{s} {b}")
+check("GET /api/tasks 返回 8 项上架家务（默认均不限次数）",
+      s == 200 and len(b["tasks"]) == 8
+      and all(t["daily_limit"] is None and t["remain_today"] is None for t in b["tasks"]), f"{s} {b}")
+
+# 种子家务默认不限次数；为验证上限逻辑，由家长为两项设置上限：扫地 1 次、收拾玩具 3 次
+_, auth = call("POST", "/api/auth/verify", {"pin": "1234"})
+TOKEN = auth["token"]
+call("PUT", "/api/admin/tasks/1", {"daily_limit": 1}, token=TOKEN)
+call("PUT", "/api/admin/tasks/7", {"daily_limit": 3}, token=TOKEN)
 
 s, b = call("POST", "/api/records/submit",
             {"items": [{"task_id": 1, "quantity": 1}, {"task_id": 7, "quantity": 2}]})
@@ -81,6 +91,14 @@ check("按月历史：本月合计 2.5 元、今天 3 条记录共 4 次",
 s, b = call("GET", "/api/records/summary")
 check("汇总：累计 2.5 元、打卡 1 天",
       s == 200 and abs(b["grand_total"] - 2.5) < 1e-9 and b["checked_days"] == 1, f"{s} {b}")
+
+# 不限次数的家务：一天内可多次打卡（拖地 1.5 元，连打 4 次）
+for _ in range(4):
+    s, b = call("POST", "/api/records/submit", {"items": [{"task_id": 2, "quantity": 1}]})
+s, b = call("GET", "/api/tasks")
+t2 = next(t for t in b["tasks"] if t["id"] == 2)
+check("不限次数家务可多次打卡：拖地 done=4、remain 仍为不限",
+      s == 200 and t2["done_today"] == 4 and t2["remain_today"] is None, f"{s} {t2}")
 
 print(f"\n通过 {passed} 项，失败 {failed} 项")
 sys.exit(0 if failed == 0 else 1)

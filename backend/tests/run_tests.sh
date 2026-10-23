@@ -54,7 +54,7 @@ if [ -f "$DB" ]; then
 fi
 
 RC=0
-echo "===== 阶段 A：儿童端接口（11 项断言）====="
+echo "===== 阶段 A：儿童端接口（12 项断言）====="
 reset_db
 start_server
 PORT="$PORT" "$PY" tests/test_child_api.py || RC=1
@@ -67,7 +67,7 @@ PORT="$PORT" "$PY" tests/test_admin_api.py || RC=1
 stop_server
 
 if [ "$RC" -eq 0 ]; then
-  echo "🎉 全部接口回归通过（32 项）"
+  echo "🎉 全部接口回归通过（33 项）"
 else
   echo "❗ 存在失败用例，请查看上方 ❌ 输出"
 fi
