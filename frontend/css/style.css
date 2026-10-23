@@ -61,3 +61,43 @@
   to   { transform: none; opacity: 1; }
 }
 .toast { animation: toast-in 0.25s ease-out; }
+
+/* 通用轻晃（锁屏 PIN 错误时复用） */
+.shake { animation: shake-x 0.3s ease-in-out; }
+
+/* ============ 家长后台 ============ */
+
+/* Tab 按钮 */
+.admin-tab {
+  padding: 0.55rem 1.1rem;
+  border-radius: 1rem;
+  font-weight: 700;
+  color: #475569;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+  transition: all .15s;
+}
+.admin-tab.active { background: #4f46e5; color: #fff; }
+
+/* PIN 数字键盘 */
+.pin-key {
+  height: 4rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: #f1f5f9;
+  border-radius: 1.2rem;
+  color: #334155;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.pin-key:active { transform: scale(0.92); }
+.pin-dot { width: 16px; height: 16px; border-radius: 9999px; background: #e2e8f0; transition: background .15s; }
+.pin-dot.on { background: #4f46e5; }
+
+/* emoji 图标选择器选中态 */
+[data-icon] { -webkit-tap-highlight-color: transparent; }
+[data-icon].icon-on {
+  background: #e0e7ff;
+  outline: 3px solid #6366f1;
+  outline-offset: -3px;
+}
