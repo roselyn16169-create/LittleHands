@@ -3,15 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>家务小助手</title>
+  <title>家务小助手 · 打卡</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="min-h-screen bg-amber-50 flex items-center justify-center">
-  <main class="text-center px-6">
-    <div class="text-8xl mb-4">🧹</div>
-    <h1 class="text-3xl md:text-4xl font-bold text-amber-800">后端骨架已就绪</h1>
-    <p class="mt-4 text-lg text-amber-600">儿童打卡页面将在「第 4 步」开发</p>
-    <p class="mt-2 text-sm text-amber-400">FastAPI + SQLite 运行中</p>
+<body class="bg-amber-50 min-h-screen pb-36">
+
+  <!-- ======== 顶部：标题 + 家长锁 ======== -->
+  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-amber-700">🏠 家务小助手</h1>
+      <a href="/admin.html" class="px-3 py-2 text-3xl" title="jiā zhǎng hòu tái · 家长后台">🔒</a>
+    </div>
+
+    <!-- 今日收益条 -->
+    <div class="bg-gradient-to-r from-amber-400 to-orange-400 text-white">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex items-end justify-between">
+        <div>
+          <div class="text-sm opacity-90">jīn rì yǐ zhuàn · 今日已赚</div>
+          <div class="text-4xl sm:text-5xl font-black leading-tight">¥ <span id="today-total">0</span></div>
+        </div>
+        <div id="pending-preview" class="text-right hidden">
+          <div class="text-sm opacity-90">zhè cì néng zhuàn · 这次能赚</div>
+          <div class="text-3xl font-black">+<span id="pending-amount">0</span> 元</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 导航 -->
+    <nav class="max-w-5xl mx-auto flex">
+      <a href="#checkin" data-tab="checkin" class="tab">✅ dǎ kǎ · 打卡</a>
+      <a href="#bank" data-tab="bank" class="tab">🐷 xiǎo jīn kù · 小金库</a>
+    </nav>
+  </header>
+
+  <!-- ======== 主内容 ======== -->
+  <main class="max-w-5xl mx-auto px-3 sm:px-4 py-4">
+    <section id="view-checkin">
+      <div id="task-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+      <p id="empty-tip" class="hidden text-center text-xl text-gray-400 py-16">家长还没有添加家务哦～</p>
+    </section>
+    <section id="view-bank" class="hidden text-center py-20">
+      <div class="text-7xl mb-4">🐷</div>
+      <p class="text-2xl font-bold text-amber-600">xiǎo jīn kù · 小金库</p>
+      <p class="mt-2 text-gray-400">将在第 5 步开发</p>
+    </section>
   </main>
+
+  <!-- ======== 底部：一键提交 ======== -->
+  <div class="fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-amber-100"
+       style="padding-bottom: env(safe-area-inset-bottom);">
+    <div class="max-w-5xl mx-auto px-4 py-3">
+      <button id="submit-btn" disabled
+        class="w-full py-4 rounded-3xl text-2xl font-extrabold text-white bg-emerald-500 shadow-lg
+               active:scale-95 transition disabled:bg-gray-300 disabled:shadow-none">
+        dǎ kǎ tí jiāo · 打卡提交
+      </button>
+    </div>
+  </div>
+
+  <!-- 悬浮提示与奖励动效 -->
+  <div id="toast-root" class="fixed inset-x-0 top-28 z-50 flex flex-col items-center gap-2 px-4 pointer-events-none"></div>
+  <div id="pop-overlay" class="fixed inset-0 z-40 hidden items-center justify-center pointer-events-none">
+    <div id="pop-text" class="text-6xl font-black text-emerald-500 drop-shadow-lg"></div>
+  </div>
+
+  <script type="module" src="/js/child.js"></script>
 </body>
 </html>

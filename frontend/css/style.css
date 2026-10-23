@@ -1,1 +1,63 @@
-/* 自定义样式：Tailwind CDN 之外的补充（第 4 步启用） */
+/* ============ 儿童打卡页：触控优化与动效 ============ */
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+               "Microsoft YaHei", sans-serif;
+}
+
+/* 触控优化：去点击高亮、防双击缩放、禁止长按选中 */
+.task-card, button, .tab {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- Tab 导航 ---------- */
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.65rem 0;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #b45309;
+  border-bottom: 4px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.tab-active {
+  color: #059669;
+  border-bottom-color: #059669;
+  background: #fff;
+}
+
+/* ---------- 选中卡片弹跳 ---------- */
+@keyframes pop-in {
+  0%   { transform: scale(0.88); }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.task-card.pop { animation: pop-in 0.25s ease-out; }
+
+/* ---------- 不可点卡片左右轻晃 ---------- */
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+.task-card.shake { animation: shake-x 0.3s ease-in-out; }
+
+/* ---------- 提交成功「+X 元」大字弹出 ---------- */
+@keyframes pop-bonus {
+  0%   { transform: scale(0.3); opacity: 0; }
+  30%  { transform: scale(1.15); opacity: 1; }
+  80%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+#pop-text.pop { animation: pop-bonus 1.3s ease-out forwards; }
+
+/* ---------- Toast 滑入 ---------- */
+@keyframes toast-in {
+  from { transform: translateY(-12px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.toast { animation: toast-in 0.25s ease-out; }
