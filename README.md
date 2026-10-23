@@ -21,7 +21,7 @@
 ## 🚀 快速开始
 
 ```bash
-git clone https://github.com/你的用户名/LittleHands.git
+git clone https://github.com/roselyn16169-create/LittleHands.git
 cd LittleHands/backend
 python3 -m venv ../.venv
 ../.venv/bin/pip install -r requirements.txt
