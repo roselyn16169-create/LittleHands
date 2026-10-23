@@ -58,7 +58,7 @@ SEED_TASKS = [
     {"name": "叠被子",   "pinyin": "dié bèi zi",     "icon": "🛏️", "price": 100, "daily_limit": 1},
     {"name": "洗碗",     "pinyin": "xǐ wǎn",         "icon": "🍽️", "price": 150, "daily_limit": 2},
     {"name": "收拾玩具", "pinyin": "shōu shi wán jù", "icon": "🧸", "price": 50,  "daily_limit": 3},
-    {"name": "浇花",     "pinyin": "jiāo huā",       "icon": "🪴", "price": 50,  "daily_limit": 2},
+    {"name": "洗衣服",   "pinyin": "xǐ yī fu",       "icon": "🧺", "price": 50,  "daily_limit": 2},
 ]
 
 # 默认配置
