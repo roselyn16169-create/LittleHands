@@ -1,41 +1,110 @@
 # 🧹 家务小助手 chore-helper
 
-引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用。
-技术栈：FastAPI + SQLite + 原生 HTML/Tailwind/JS，适配 iPad 与 PC。
+> v1.0.0 · 引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
 
-## 快速开始
+## ✨ 功能亮点
+
+- 🧒 **儿童打卡页**：大字号 + emoji 图标 + 带声调拼音；点卡片即打卡（一次勾选 = 1 次，同一家务一天内可多次打卡），顶部实时金额、一键提交、`+X 元 🎉` 即时奖励动效，卡满自动置灰防挫败
+- 🐷 **小金库**：累计 / 本月 / 今日收益、打卡天数、今日明细（按家务聚合显示次数）、按月浏览每日记录、点开回看当日明细
+- 🔒 **家长后台**（4 位 PIN 锁屏 + 防乱试锁定）：家务增删改查（emoji 图标选择器、拼音留空自动生成、每日上限、排序）、字段级**变更日志**、收益概览与**近 7 天趋势图**、修改 PIN
+- 📱 **响应式**：手机 2 列 / 平板 3 列 / iPad 横屏与 PC 4 列；触控目标大、防双击缩放、适配全面屏安全区；支持 Safari「添加到主屏幕」获得类 App 体验
+- 💾 **纯本地**：SQLite 单文件数据库，零云依赖、零隐私顾虑、数据可随时备份
+
+## 🧰 技术栈
+
+| 层 | 技术 |
+|---|---|
+| 后端 | Python 3.10+ · FastAPI · SQLite（标准库 sqlite3，无 ORM、无迁移工具） |
+| 前端 | 原生 HTML / CSS / JavaScript（ES Modules）· Tailwind CSS（CDN） |
+| 测试 | 标准库 urllib 接口回归测试，32 项断言一键运行 |
+
+## 🚀 快速开始
 
 ```bash
-cd backend
+git clone https://github.com/你的用户名/chore-helper.git
+cd chore-helper/backend
 python3 -m venv ../.venv
 ../.venv/bin/pip install -r requirements.txt
 ../.venv/bin/uvicorn main:app --reload --port 8000
 ```
 
-打开 http://127.0.0.1:8000 （儿童端页面第 4 步开发中；接口文档见 /docs）
+| 入口 | 地址 |
+|---|---|
+| 儿童打卡页 | http://127.0.0.1:8000 |
+| 家长后台 | http://127.0.0.1:8000/admin.html （默认 PIN `1234`，**请尽快修改**） |
+| 交互式接口文档 | http://127.0.0.1:8000/docs |
 
-## 接口回归测试
+首次启动自动建库，并预置 8 项常见家务：🧹扫地 · 🪣拖地 · 🧽擦桌子 · 🗑️倒垃圾 · 🛏️叠被子 · 🍽️洗碗 · 🧸收拾玩具 · 🧺洗衣服。
+
+> 💡 **全家共用**：iPad 浏览器访问 `http://<电脑IP>:8000` 即可；在 Safari「分享 → 添加到主屏幕」可获得全屏体验。
+> ⚠️ 样式通过 Tailwind CDN 加载，首次打开需能访问外网（如需完全离线，可自行把 CDN 脚本下载至本地引用）。
+
+## 📁 项目结构
+
+```
+chore-helper/
+├── backend/
+│   ├── main.py               # FastAPI 入口：路由挂载 + 静态托管
+│   ├── database.py           # SQLite 连接/事务/建表/种子
+│   ├── models.py             # 表结构 DDL 与种子数据
+│   ├── schemas.py            # Pydantic 请求模型
+│   ├── auth.py               # PIN 校验（SHA-256）/ token / 防乱试
+│   ├── utils.py              # 金额分↔元 / 时间 / pypinyin
+│   ├── routers/
+│   │   ├── tasks.py          # 儿童端：家务列表
+│   │   ├── records.py        # 儿童端：打卡/明细/历史/汇总
+│   │   └── admin.py          # 家长端：鉴权/CRUD/日志/统计
+│   └── tests/                # 回归测试（run_tests.sh 一键运行）
+├── frontend/
+│   ├── index.html            # 儿童端（打卡 + 小金库）
+│   ├── admin.html            # 家长后台（PIN 锁屏）
+│   ├── css/style.css         # 动效与触控优化
+│   └── js/                   # api / common / child / bank / admin
+└── data/chore.db             # SQLite 数据文件（自动生成，不入库）
+```
+
+## 🔌 接口一览
+
+| 分组 | 端点 |
+|---|---|
+| 儿童端 | `GET /api/tasks` · `GET /api/records/today` · `POST /api/records/submit` · `GET /api/records?date=` · `GET /api/records/history?month=` · `GET /api/records/summary` |
+| 鉴权 | `POST /api/auth/verify` · `POST /api/auth/logout` · `PUT /api/auth/pin` |
+| 家长端 | `GET/POST /api/admin/tasks` · `PUT/DELETE /api/admin/tasks/{id}` · `GET /api/admin/logs` · `GET /api/admin/stats` |
+
+详细参数见 `/docs`（Swagger UI，支持在线调试）。
+
+## 🧠 设计要点
+
+- **金额一律存「分」**（INTEGER），杜绝浮点误差，接口层统一换算为元
+- **打卡记录快照**：保存打卡时的名称/图标/单价，日后改价改名不影响历史
+- **下架而非删除**：任务软删除 + 日志免外键约束，历史数据永久可追溯
+- **提交全有或全无**：任一项超额整单拒绝并回滚，杜绝「半单」
+- **PIN 安全**：SHA-256 存储（兼容旧明文自动升级）、连错 5 次锁定 30 秒、token 仅存内存（重启即失效）
+- **幂等种子**：种子数据仅在空库写入，绝不覆盖家长的自定义内容
+
+## 🧪 运行测试
 
 ```bash
 bash backend/tests/run_tests.sh
 ```
 
-自动备份现有数据库 → 重置测试库 → 依次运行儿童端/家长端共 32 项接口断言 → 恢复原数据库。
+自动备份现有数据库 → 重置测试库 → 儿童端 11 项 + 家长端 21 项断言 → 恢复原库。
 
-## 开发路线图
+## ❓ 常见问题
 
-- [x] 第 1 步：后端骨架 + 建库 + 种子数据
-- [x] 第 2 步：儿童端 API（打卡/明细/汇总）
-- [x] 第 3 步：家长端 API（PIN 鉴权/任务 CRUD/变更日志）
-- [x] 第 4 步：儿童打卡页
-- [x] 第 5 步：小金库页
-- [x] 第 6 步：家长后台页面
-- [ ] 第 7 步：iPad 适配与体验打磨
+**忘记 PIN 怎么办？**
+```bash
+sqlite3 data/chore.db "DELETE FROM settings WHERE key='pin'"
+```
+重启服务即恢复默认 `1234`。
 
-## 设计要点
+**如何备份数据？** 直接复制 `data/chore.db` 文件；恢复时放回原位置即可。
 
-- 金额一律存「分」（INTEGER），杜绝浮点误差；接口层统一换算为元
-- 打卡记录保存名称/图标/单价快照，历史不受后续修改影响
-- 任务删除采用「下架」软删除，保证历史可追溯
-- 家长 PIN 以 SHA-256 存储；token 仅存内存（重启即失效，家用足够）
-- 打卡提交为「全有或全无」：任一项超额则整单拒绝
+**想用独立测试库，不碰正式数据？**
+```bash
+CHORE_DB=/tmp/test.db ../.venv/bin/uvicorn main:app --port 8001
+```
+
+## 📄 许可证
+
+[MIT](./LICENSE)

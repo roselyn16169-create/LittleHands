@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="家务小助手 API",
-    version="0.3.0",
+    version="1.0.0",
     description="儿童家务打卡 / 小金库 / 家长管理后台",
     lifespan=lifespan,
 )

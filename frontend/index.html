@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>家务小助手 · 打卡</title>
+  <meta name="theme-color" content="#fbbf24">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="家务小助手">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -41,6 +46,7 @@
   <main class="max-w-5xl mx-auto px-3 sm:px-4 py-4">
     <section id="view-checkin">
       <div id="task-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"></div>
+      <div id="grid-loading" class="py-16 text-center text-gray-400 text-lg">jiā zǎi zhōng · 加载中…</div>
       <p id="empty-tip" class="hidden text-center text-xl text-gray-400 py-16">家长还没有添加家务哦～</p>
     </section>
     <section id="view-bank" class="hidden">
@@ -88,7 +94,7 @@
     <div class="max-w-5xl mx-auto px-4 py-3">
       <button id="submit-btn" disabled
         class="w-full py-4 rounded-3xl text-2xl font-extrabold text-white bg-emerald-500 shadow-lg
-               active:scale-95 transition disabled:bg-gray-300 disabled:shadow-none">
+               active:scale-95 transition disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed">
         dǎ kǎ tí jiāo · 打卡提交
       </button>
     </div>

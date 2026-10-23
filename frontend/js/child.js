@@ -15,6 +15,7 @@ const state = {
 };
 
 const grid = document.getElementById("task-grid");
+const loadingEl = document.getElementById("grid-loading");
 const emptyTip = document.getElementById("empty-tip");
 const todayTotalEl = document.getElementById("today-total");
 const pendingBox = document.getElementById("pending-preview");
@@ -71,6 +72,7 @@ function cardHTML(t) {
 }
 
 function render(popId = null) {
+  if (loadingEl) loadingEl.classList.add("hidden");
   if (state.tasks.length === 0) {
     grid.innerHTML = "";
     emptyTip.classList.remove("hidden");
@@ -171,6 +173,7 @@ document.addEventListener("visibilitychange", () => {
   try {
     await loadAll();
   } catch (err) {
+    if (loadingEl) loadingEl.classList.add("hidden");
     toast(err.message, "error");
   }
 })();
