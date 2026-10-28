@@ -30,6 +30,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+@app.middleware("http")
+async def no_cache_static(request, call_next):
+    """静态资源（页面/JS/CSS）一律 no-cache：浏览器每次协商校验，改版立即生效，杜绝旧缓存捣乱。"""
+    resp = await call_next(request)
+    p = request.url.path
+    if p.startswith("/js/") or p.startswith("/css/") or p.endswith(".html") or p == "/":
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 # ---- 业务路由 ----
 app.include_router(tasks.router)      # 儿童端：家务列表
 app.include_router(records.router)    # 儿童端：打卡/明细/历史/汇总

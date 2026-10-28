@@ -1,4 +1,4 @@
-"""家长端接口回归测试（30 项断言）。
+"""家长端接口回归测试（33 项断言）。
 
 独立运行前需先启动服务，例如：
     cd backend && ../.venv/bin/uvicorn main:app --port 8399
@@ -144,6 +144,16 @@ s, b = call("GET", "/api/admin/tasks", token=TOKEN)
 check("登出后旧 token 失效（401）", s == 401)
 s, b = call("POST", "/api/auth/verify", {"pin": "5678"})
 check("新 PIN 可正常登录", s == 200, f"{s} {b}")
+TOKEN2 = b["token"]
+
+# ===== 单会话模型：每次进入后台必须重输 PIN，旧会话立即作废 =====
+s, b = call("POST", "/api/auth/verify", {"pin": "5678"})
+TOKEN3 = b["token"]
+check("再次解锁签发新 token（与上次不同）", s == 200 and TOKEN3 != TOKEN2)
+s, b = call("GET", "/api/admin/tasks", token=TOKEN2)
+check("旧会话 token 已被作废（401）", s == 401, f"{s} {b}")
+s, b = call("GET", "/api/admin/tasks", token=TOKEN3)
+check("新会话 token 正常使用（200）", s == 200, f"{s} {b}")
 
 print(f"\n通过 {passed} 项，失败 {failed} 项")
 sys.exit(0 if failed == 0 else 1)
