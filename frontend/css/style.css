@@ -113,3 +113,42 @@
   transition: all .15s;
 }
 .method-chip.on { background: #4f46e5; color: #fff; }
+
+/* ============ 授勋仪式（成就解锁动效） ============ */
+
+#award-overlay.show    { display: flex; animation: award-in .35s ease-out; }
+#award-overlay.leaving { display: flex; animation: award-out .45s ease-in forwards; }
+
+@keyframes award-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes award-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* 勋章：金色底盘 + 弹跳登场 + 呼吸光晕 */
+.award-medal {
+  background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fcd34d 55%, #f59e0b 100%);
+  animation: award-pop .8s cubic-bezier(.34, 1.56, .64, 1) both,
+             award-glow 1.5s ease-in-out .25s infinite;
+}
+@keyframes award-pop {
+  0%   { transform: scale(.1) rotate(-40deg); opacity: 0; }
+  60%  { transform: scale(1.22) rotate(6deg);  opacity: 1; }
+  80%  { transform: scale(.94) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes award-glow {
+  0%, 100% { box-shadow: 0 0 26px 8px rgba(252, 211, 77, .35); }
+  50%      { box-shadow: 0 0 60px 24px rgba(252, 211, 77, .70); }
+}
+
+/* 环形放射光芒：缓慢旋转 */
+.award-rays {
+  background: repeating-conic-gradient(from 0deg,
+              rgba(253, 230, 138, .55) 0deg 9deg, transparent 9deg 45deg);
+  border-radius: 9999px;
+  animation: rays-spin 9s linear infinite;
+  -webkit-mask-image: radial-gradient(circle, transparent 42%, black 47%, black 76%, transparent 81%);
+  mask-image: radial-gradient(circle, transparent 42%, black 47%, black 76%, transparent 81%);
+}
+@keyframes rays-spin { to { transform: rotate(360deg); } }
+
+/* 勋章名称：延迟弹出 */
+.award-name { animation: award-pop .7s .18s cubic-bezier(.34, 1.56, .64, 1) both; }

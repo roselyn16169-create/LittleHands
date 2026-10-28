@@ -5,7 +5,7 @@
  * 今日完成次数实时显示在卡片左上角徽章。
  */
 import { api } from "./api.js";
-import { fmtMoney, toast, popBonus } from "./common.js";
+import { fmtMoney, toast, popBonus, awardBadge } from "./common.js";
 import { loadBank } from "./bank.js";
 
 const state = {
@@ -142,9 +142,9 @@ submitBtn.addEventListener("click", async () => {
     const res = await api.submit(items);
     state.selected.clear();
     popBonus(`+${fmtMoney(res.added_amount)} 元 🎉`);
-    // 新解锁的成就徽章依次弹出（与金额反馈错开节奏）
+    // 新解锁的成就：全屏授勋仪式依次颁发（每枚约 3 秒）
     (res.unlocked || []).forEach((u, i) => {
-      setTimeout(() => popBonus(`${u.icon} jiě suǒ chéng jiù · 解锁成就：${u.name}！`), 1400 + i * 1500);
+      setTimeout(() => awardBadge(u), 1500 + i * 2900);
     });
     await loadAll();
     toast("打卡成功，你真棒！💪", "success");

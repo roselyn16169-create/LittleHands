@@ -36,3 +36,27 @@ export function popBonus(text) {
     overlay.classList.remove("flex");
   }, 1300);
 }
+
+/** 授勋仪式：全屏颁发成就勋章（徽章弹跳登场 + 旋转光芒 + 金色光晕）。
+ *  页面无授勋弹层元素时自动退化为文字弹出。 */
+export function awardBadge(badge) {
+  const ov = document.getElementById("award-overlay");
+  if (!ov) {
+    popBonus(`${badge.icon} 解锁成就：${badge.name}！`);
+    return;
+  }
+  document.getElementById("award-icon").textContent = badge.icon;
+  document.getElementById("award-name").textContent = badge.name;
+  document.getElementById("award-desc").textContent = badge.desc || "";
+  ov.classList.remove("hidden", "leaving");
+  void ov.offsetWidth;   // 重启动画
+  ov.classList.add("show");
+  setTimeout(() => {
+    ov.classList.remove("show");
+    ov.classList.add("leaving");
+    setTimeout(() => {
+      ov.classList.add("hidden");
+      ov.classList.remove("leaving");
+    }, 460);
+  }, 2400);
+}

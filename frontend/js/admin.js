@@ -395,7 +395,8 @@ $("sm-save").addEventListener("click", async () => {
   if (note) payload.note = note;
   try {
     const res = await admin.createSettlement(payload);
-    toast(`结算成功，余额 ¥${fmtMoney(res.balance)}`, "success");
+    const names = (res.unlocked || []).map((u) => `${u.icon} ${u.name}`).join("、");
+    toast(`结算成功，余额 ¥${fmtMoney(res.balance)}` + (names ? `；为孩子解锁 ${names}` : ""), "success");
     closeSettleModal();
     loadSettle();
   } catch (err) {
