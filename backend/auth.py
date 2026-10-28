@@ -1,4 +1,4 @@
-"""家长后台鉴权：PIN 校验（SHA-256 存储）、持久化 token（SQLite，服务重启不掉线）、防孩子乱试锁定。"""
+"""家长后台鉴权：PIN 校验（SHA-256 存储）、单会话 token（每次进入后台需重新输 PIN）、防孩子乱试锁定。"""
 import hashlib
 import secrets
 import time
@@ -10,7 +10,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from database import db
 from utils import now_iso
 
-TOKEN_TTL = 7 * 24 * 60 * 60   # token 有效期：7 天（存 SQLite，重启依然有效）
+TOKEN_TTL = 24 * 60 * 60   # token 兜底有效期：24 小时（正常随离开后台页面即废弃）
 MAX_FAILS = 5                  # 连续输错 5 次
 LOCK_SECONDS = 30              # 锁定 30 秒
 
@@ -61,11 +61,11 @@ def set_pin(new_pin: str) -> None:
 # ---------- 会话 token（SQLite 持久化） ----------
 
 def issue_token() -> str:
-    """签发新 token 并清理全部过期 token。"""
+    """签发新 token；单会话模型——同时作废全部旧 token（旧页面/旧设备立即失效）。"""
     token = secrets.token_hex(16)
     now = time.time()
     with db() as conn:
-        conn.execute("DELETE FROM auth_tokens WHERE expires_at < ?", (now,))
+        conn.execute("DELETE FROM auth_tokens")   # 单会话：作废全部旧 token
         conn.execute(
             "INSERT INTO auth_tokens (token, expires_at, created_at) VALUES (?, ?, ?)",
             (token, now + TOKEN_TTL, now_iso()),

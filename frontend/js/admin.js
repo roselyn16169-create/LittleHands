@@ -436,28 +436,10 @@ $("pin-save").addEventListener("click", async () => {
   }
 });
 
-/* ==================== 锁屏按钮 ==================== */
-
-$("btn-logout").addEventListener("click", async () => {
-  try { await admin.logout(); } catch (e) { /* token 失效也直接锁 */ }
-  admin.clearToken();
-  showLock();
-  toast("已锁定 🔒", "info");
-});
-
 /* ==================== 启动 ==================== */
 
 buildIconGrid();
 
-(async function init() {
-  if (admin.getToken()) {
-    try {
-      await admin.stats();   // 用一次鉴权请求验证 token 是否有效
-      showAdmin();
-      return;
-    } catch (e) {
-      admin.clearToken();
-    }
-  }
-  showLock();
-})();
+/* 每次进入家长后台都必须重新输 PIN：token 只存当前页面内存，
+   从儿童端返回后再进本页即视为新会话。 */
+showLock();

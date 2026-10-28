@@ -41,7 +41,7 @@ def _row_out(r, done_today: int = 0, total_times: int = 0, total_earned: int = 0
 
 @router.post("/api/auth/verify", tags=["家长后台 · PIN 鉴权"])
 def auth_verify(req: PinVerify):
-    """PIN 校验，成功返回 7 天有效的家长 token（服务重启不掉线）。"""
+    """PIN 校验，成功返回会话 token（离开后台页面即失效，每次进入需重新输 PIN）。"""
     check_pin(req.pin)
     return {"token": issue_token(), "expires_in": TOKEN_TTL}
 

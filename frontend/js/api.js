@@ -43,13 +43,14 @@ export const api = {
   settlements: () => request("GET", "/api/settlements"),
 };
 
-/* ---------- 家长端（Bearer token） ---------- */
-const TOKEN_KEY = "chore_parent_token";
+/* ---------- 家长端（Bearer token，仅存当前页面内存：离开页面即失效，下次进入需重新输 PIN） ---------- */
+
+let _token = null;
 
 export const admin = {
-  getToken: () => localStorage.getItem(TOKEN_KEY),
-  setToken: (t) => localStorage.setItem(TOKEN_KEY, t),
-  clearToken: () => localStorage.removeItem(TOKEN_KEY),
+  getToken: () => _token,
+  setToken: (t) => { _token = t; },
+  clearToken: () => { _token = null; },
 
   verify: (pin) => request("POST", "/api/auth/verify", { pin }),
   logout: () => request("POST", "/api/auth/logout", null, admin.getToken()),

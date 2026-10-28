@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS settings (
     value TEXT NOT NULL
 );
 
--- ============ 家长会话 token（持久化到数据库，服务重启不掉线）============
+-- ============ 家长会话 token（单会话：每次解锁即作废旧 token）============
 CREATE TABLE IF NOT EXISTS auth_tokens (
     token      TEXT PRIMARY KEY,
     expires_at REAL NOT NULL,                             -- 过期时间戳
