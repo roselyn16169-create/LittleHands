@@ -41,6 +41,7 @@ export const api = {
   history: (month) => request("GET", `/api/records/history${month ? `?month=${month}` : ""}`),
   day: (date) => request("GET", `/api/records?date=${date}`),
   settlements: () => request("GET", "/api/settlements"),
+  achievements: () => request("GET", "/api/achievements"),
 };
 
 /* ---------- 家长端（Bearer token，仅存当前页面内存：离开页面即失效，下次进入需重新输 PIN） ---------- */

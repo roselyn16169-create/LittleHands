@@ -138,6 +138,10 @@ submitBtn.addEventListener("click", async () => {
     const res = await api.submit(items);
     state.selected.clear();
     popBonus(`+${fmtMoney(res.added_amount)} 元 🎉`);
+    // 新解锁的成就徽章依次弹出（与金额反馈错开节奏）
+    (res.unlocked || []).forEach((u, i) => {
+      setTimeout(() => popBonus(`${u.icon} jiě suǒ chéng jiù · 解锁成就：${u.name}！`), 1400 + i * 1500);
+    });
     await loadAll();
     toast("打卡成功，你真棒！💪", "success");
   } catch (err) {

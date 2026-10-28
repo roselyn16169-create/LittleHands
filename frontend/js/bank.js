@@ -42,6 +42,7 @@ async function loadBank() {
     $("bank-earned").textContent = "¥" + fmtMoney(sum.grand_total);
     renderToday(today);
     renderSettlements();
+    renderBadges();
     if (!currentMonth) currentMonth = today.date.slice(0, 7);
     await loadHistory();
   } catch (err) {
@@ -85,6 +86,32 @@ async function renderSettlements() {
       </div>
       <div class="text-2xl font-black text-indigo-400">−${fmtMoney(i.amount)}</div>
     </div>`).join("");
+  } catch (err) {
+    box.innerHTML = "";
+  }
+}
+
+/* ---------- 我的成就（徽章墙） ---------- */
+
+async function renderBadges() {
+  const box = document.getElementById("badge-wall");
+  try {
+    const res = await api.achievements();
+    box.innerHTML = res.badges.map((b) => {
+      const left = Math.max(b.target - b.current, 0);
+      const pct = Math.min(100, Math.round((b.current / b.target) * 100));
+      return `
+      <div class="bg-white rounded-2xl shadow p-2 sm:p-3 text-center ${b.unlocked ? "" : "opacity-50 grayscale"}" title="${b.desc}">
+        <div class="text-3xl sm:text-4xl">${b.icon}</div>
+        <div class="text-xs sm:text-sm font-extrabold text-gray-700 mt-1 truncate">${b.name}</div>
+        ${b.unlocked
+          ? `<div class="text-[10px] sm:text-xs text-emerald-500 font-bold mt-0.5">✓ yǐ jiě suǒ</div>`
+          : `<div class="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+               <div class="h-full bg-amber-400" style="width:${pct}%"></div>
+             </div>
+             <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5">hái chà · 还差 ${left}</div>`}
+      </div>`;
+    }).join("");
   } catch (err) {
     box.innerHTML = "";
   }

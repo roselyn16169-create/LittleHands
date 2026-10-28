@@ -7,6 +7,7 @@
 - 🧒 **儿童打卡页**：大字号 + emoji 图标 + 带声调拼音；点卡片即打卡（一次勾选 = 1 次，同一家务一天内可在不同时间多次打卡，默认不限次数），卡片左上角显示今日完成次数；顶部实时金额、一键提交、`+X 元 🎉` 即时奖励动效；家长设置了每日上限的家务打满后自动置灰
 - 🐷 **小金库**：累计 / 本月 / 今日收益、打卡天数、今日明细（按家务聚合显示次数）、按月浏览每日记录、点开回看当日明细
 - 💰 **结算记账**：家长选择方式（支付宝/微信/现金/玩具兑换…）记录结算金额，余额自动重算 = 累计收益 − 已结算；转账线下完成仅记账，支持撤销，孩子端同步可见「当前余额 + 兑换记录」- 🔒 **家长后台**（4 位 PIN 锁屏 + 防乱试锁定）：家务增删改查（emoji 图标选择器、拼音留空自动生成、每日上限、排序）、字段级**变更日志**、收益概览与**近 7 天趋势图**、修改 PIN
+- 🏅 **成就徽章**：12 枚游戏化勋章（坚持之星/勤劳天数/单项能手/多面手/小富翁/兑换系列），打卡与结算实时判定，解锁弹出动效，小金库成就墙展示进度
 - 📱 **响应式**：手机 2 列 / 平板 3 列 / iPad 横屏与 PC 4 列；触控目标大、防双击缩放、适配全面屏安全区；支持 Safari「添加到主屏幕」获得类 App 体验
 - 💾 **纯本地**：SQLite 单文件数据库，零云依赖、零隐私顾虑、数据可随时备份
 
@@ -16,7 +17,7 @@
 |---|---|
 | 后端 | Python 3.10+ · FastAPI · SQLite（标准库 sqlite3，无 ORM、无迁移工具） |
 | 前端 | 原生 HTML / CSS / JavaScript（ES Modules）· Tailwind CSS（CDN） |
-| 测试 | 标准库 urllib 接口回归测试，42 项断言一键运行 |
+| 测试 | 标准库 urllib 接口回归测试，62 项断言一键运行（详见 docs/TEST_PLAN.md） |
 
 ## 🚀 快速开始
 
@@ -69,7 +70,7 @@ LittleHands/
 |---|---|
 | 儿童端 | `GET /api/tasks` · `GET /api/records/today` · `POST /api/records/submit` · `GET /api/records?date=` · `GET /api/records/history?month=` · `GET /api/records/summary` |
 | 鉴权 | `POST /api/auth/verify` · `POST /api/auth/logout` · `PUT /api/auth/pin` |
-| 儿童端·结算 | `GET /api/settlements` |
+| 儿童端·结算/成就 | `GET /api/settlements` · `GET /api/achievements` |
 | 家长端 | `GET/POST /api/admin/tasks` · `PUT/DELETE /api/admin/tasks/{id}` · `GET /api/admin/logs` · `GET /api/admin/stats` · `GET/POST /api/admin/settlements` · `DELETE /api/admin/settlements/{id}` |
 
 详细参数见 `/docs`（Swagger UI，支持在线调试）。
@@ -90,7 +91,7 @@ LittleHands/
 bash backend/tests/run_tests.sh
 ```
 
-自动备份现有数据库 → 重置测试库 → 儿童端 12 项 + 家长端 30 项断言 → 恢复原库。
+自动备份现有数据库 → 重置测试库 → 四阶段共 62 项断言 → 恢复原库。
 
 ## ❓ 常见问题
 

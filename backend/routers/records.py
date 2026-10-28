@@ -3,6 +3,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query
 
+from badges import check_achievements
 from database import db
 from schemas import SubmitRequest
 from utils import now_iso, today_str, to_yuan
@@ -128,11 +129,15 @@ def submit(req: SubmitRequest):
             (today,),
         ).fetchone()[0]
 
+        # 成就判定（随本事务提交）：返回本次新解锁的徽章供前端弹出动效
+        fresh = check_achievements(conn)
+
     return {
         "date": today,
         "added": len(merged),
         "added_amount": to_yuan(added_cents),   # 本次提交新增金额，用于儿童端 "+2.5 元" 反馈
         "today_total": to_yuan(total),          # 今日累计
+        "unlocked": fresh,                      # 新解锁徽章列表（可能为空）
     }
 
 

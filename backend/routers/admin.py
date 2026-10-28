@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from auth import TOKEN_TTL, check_pin, issue_token, require_parent, revoke_token, set_pin
+from badges import BADGES, badges_payload, check_achievements
 from database import db
 from schemas import PinChange, PinVerify, SettlementCreate, TaskCreate, TaskUpdate
 from utils import make_pinyin, now_iso, today_str, to_cents, to_yuan
@@ -242,6 +243,8 @@ def admin_stats(_t: str = Depends(require_parent)):
             "balance": to_yuan(grand - settled),
             "checked_days": one("SELECT COUNT(DISTINCT record_date) FROM daily_records"),
             "active_tasks": one("SELECT COUNT(*) FROM tasks WHERE is_active = 1"),
+            "achieved": one("SELECT COUNT(*) FROM achievements"),
+            "total_badges": len(BADGES),
         }
     last7 = []
     for i in range(6, -1, -1):
@@ -272,6 +275,13 @@ def child_settlements(limit: int = Query(20, ge=1, le=100)):
          "note": r["note"], "created_at": r["created_at"]}
         for r in rows
     ]}
+
+
+@router.get("/api/achievements", tags=["儿童端 · 成就"])
+def child_achievements():
+    """成就墙：全部徽章的解锁状态、进度与实时指标。"""
+    with db() as conn:
+        return badges_payload(conn)
 
 
 @router.get("/api/admin/settlements", tags=["家长后台 · 结算"])
@@ -319,8 +329,9 @@ def admin_create_settlement(req: SettlementCreate, _t: str = Depends(require_par
             (cents, method, (req.note or "").strip() or None,
              balance, balance - cents, now_iso()))
         new_id = cur.lastrowid
+        fresh = check_achievements(conn)   # 兑换类徽章在结算时判定
     return {"id": new_id, "amount": to_yuan(cents), "method": method,
-            "balance": to_yuan(balance - cents)}
+            "balance": to_yuan(balance - cents), "unlocked": fresh}
 
 
 @router.delete("/api/admin/settlements/{settle_id}", tags=["家长后台 · 结算"])

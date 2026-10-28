@@ -91,6 +91,7 @@ async function loadStats() {
     $("stat-grand").textContent = "¥" + fmtMoney(s.grand_total);
     $("stat-days").textContent = s.checked_days + " 天";
     $("stat-active").textContent = s.active_tasks + " 项";
+    $("stat-badges").textContent = `${s.achieved} / ${s.total_badges}`;
 
     /* 近 7 天柱状图（纯 CSS，今日高亮，零额日极矮底座） */
     const max = Math.max(...s.last7.map((d) => d.total), 1);

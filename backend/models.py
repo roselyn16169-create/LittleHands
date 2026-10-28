@@ -66,6 +66,13 @@ CREATE TABLE IF NOT EXISTS settlements (
     operator       TEXT    NOT NULL DEFAULT 'parent',
     created_at     TEXT    NOT NULL
 );
+
+-- ============ 已解锁成就徽章 ============
+CREATE TABLE IF NOT EXISTS achievements (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    badge_key   TEXT NOT NULL UNIQUE,
+    unlocked_at TEXT NOT NULL
+);
 """
 
 # 预置 8 项常见家务（price 单位：分；0.5 元 = 50）
