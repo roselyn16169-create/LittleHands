@@ -47,6 +47,13 @@ check("GET /api/tasks 返回 8 项上架家务（默认均不限次数）",
       s == 200 and len(b["tasks"]) == 8
       and all(t["daily_limit"] is None and t["remain_today"] is None for t in b["tasks"]), f"{s} {b}")
 
+# 默认价格快照（防手滑改种子）：洗碗 3 / 拖地·洗衣服 2 / 扫地 1.5 / 叠被子 1 / 其余 0.5
+PRICE = {"扫地": 1.5, "拖地": 2.0, "擦桌子": 0.5, "倒垃圾": 0.5, "叠被子": 1.0,
+         "洗碗": 3.0, "收拾玩具": 0.5, "洗衣服": 2.0}
+check("默认价格快照正确（按儿童完成难度定价）",
+      all(abs(t["price"] - PRICE[t["name"]]) < 1e-9 for t in b["tasks"]),
+      str({t["name"]: t["price"] for t in b["tasks"]}))
+
 # 种子家务默认不限次数；为验证上限逻辑，由家长为两项设置上限：扫地 1 次、收拾玩具 3 次
 _, auth = call("POST", "/api/auth/verify", {"pin": "1234"})
 TOKEN = auth["token"]

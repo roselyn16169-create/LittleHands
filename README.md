@@ -1,6 +1,6 @@
 # 🖐️ LittleHands 小手家务
 
-> v1.0.0 · 小手也能做大事——引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
+[![tests](https://github.com/roselyn16169-create/LittleHands/actions/workflows/tests.yml/badge.svg)](https://github.com/roselyn16169-create/LittleHands/actions/workflows/tests.yml)> v1.0.0 · 小手也能做大事——引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
 
 ## ✨ 功能亮点
 
@@ -17,7 +17,7 @@
 |---|---|
 | 后端 | Python 3.10+ · FastAPI · SQLite（标准库 sqlite3，无 ORM、无迁移工具） |
 | 前端 | 原生 HTML / CSS / JavaScript（ES Modules）· Tailwind CSS（CDN） |
-| 测试 | 标准库 urllib 接口回归测试，62 项断言一键运行（详见 docs/TEST_PLAN.md） |
+| 测试 | 标准库 urllib 接口回归测试，71 项断言一键运行；本地 pre-push 拦截 + GitHub Actions CI 双保险（详见 docs/TEST_PLAN.md） |
 
 ## 🚀 快速开始
 

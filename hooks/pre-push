@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# 推送前自动执行全量回归测试，失败则阻止推送
+echo "🧪 pre-push: 执行全量回归测试（71 项）..."
+DIR="$(cd "$(dirname "$0")/.." && pwd)"
+bash "$DIR/backend/tests/run_tests.sh"

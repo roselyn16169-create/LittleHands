@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # ============================================================
 # LittleHands 小手家务 · 一键回归测试
-# 阶段 A 儿童端接口（12 项） / 阶段 B 家长端接口（33 项）
-# 阶段 C 成就徽章（12 项）     / 阶段 D 页面静态断言（6 项）
-# 共 63 项。详见 docs/TEST_PLAN.md
+# 阶段 A 儿童端接口（13 项） / 阶段 B 家长端接口（33 项）
+# 阶段 C 成就徽章（12 项）     / 阶段 D 页面静态断言（9 项）
+# 阶段 E 跨天重置（4 项）      / 共 71 项。详见 docs/TEST_PLAN.md
 # 用法（任意目录）：bash backend/tests/run_tests.sh
 # ============================================================
 set -e
@@ -59,7 +59,7 @@ if [ -f "$DB" ]; then
 fi
 
 RC=0
-echo "===== 阶段 A：儿童端接口（12 项断言）====="
+echo "===== 阶段 A：儿童端接口（13 项断言）====="
 reset_db
 start_server
 PORT="$PORT" "$PY" tests/test_child_api.py || RC=1
@@ -77,7 +77,7 @@ start_server
 PORT="$PORT" CHORE_DB="$DB" "$PY" tests/test_achievements.py || RC=1
 stop_server
 
-echo "===== 阶段 D：页面静态断言（6 项）====="
+echo "===== 阶段 D：页面静态断言（9 项）====="
 reset_db
 start_server
 DP=0; DF=0
@@ -90,12 +90,22 @@ if grep -q "localStorage" "$ROOT_DIR/frontend/js/api.js"; then ck "登录凭证�
 if curl -sI "$B/admin.html" | grep -qi "cache-control: no-cache"; then ck "页面响应带 no-cache（改版即生效）" 1; else ck "页面响应带 no-cache（改版即生效）" 0; fi
 NB=$(curl -s "$B/api/achievements" | "$PY" -c "import json,sys; print(len(json.load(sys.stdin)['badges']))" 2>/dev/null)
 [ "$NB" = "12" ] && ck "成就接口返回 12 枚徽章" 1 || ck "成就接口返回 12 枚徽章" 0
+UNIQ=$(curl -s "$B/api/achievements" | "$PY" -c "import json,sys; d=json.load(sys.stdin)['badges']; print(1 if len(set(b['icon'] for b in d))==len(d) else 0)" 2>/dev/null)
+ck "勋章图标全表不重复（等级可区分）" "$UNIQ"
+curl -s "$B/" | grep -q 'id="balance-main"' && ck "儿童端「我的钱」主数字元素就绪" 1 || ck "儿童端「我的钱」主数字元素就绪" 0
+if curl -s "$B/" | grep -q "award-overlay" && curl -s "$B/" | grep -q "badge-modal"; then ck "授勋仪式与勋章详情弹层就绪" 1; else ck "授勋仪式与勋章详情弹层就绪" 0; fi
 stop_server
 echo "阶段 D：通过 $DP 项，失败 $DF 项"
 [ "$DF" -gt 0 ] && RC=1
 
+echo "===== 阶段 E：跨天重置（4 项断言）====="
+reset_db
+start_server
+PORT="$PORT" CHORE_DB="$DB" "$PY" tests/test_day_reset.py || RC=1
+stop_server
+
 if [ "$RC" -eq 0 ]; then
-  echo "🎉 全部回归通过（63 项：A12 + B33 + C12 + D6）"
+  echo "🎉 全部回归通过（71 项：A13 + B33 + C12 + D9 + E4）"
 else
   echo "❗ 存在失败用例，请查看上方 ❌ 输出"
 fi
