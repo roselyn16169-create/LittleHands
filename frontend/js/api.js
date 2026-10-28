@@ -40,6 +40,7 @@ export const api = {
   summary: () => request("GET", "/api/records/summary"),
   history: (month) => request("GET", `/api/records/history${month ? `?month=${month}` : ""}`),
   day: (date) => request("GET", `/api/records?date=${date}`),
+  settlements: () => request("GET", "/api/settlements"),
 };
 
 /* ---------- 家长端（Bearer token） ---------- */
@@ -62,4 +63,8 @@ export const admin = {
   logs: (page = 1, pageSize = 20) =>
     request("GET", `/api/admin/logs?page=${page}&page_size=${pageSize}`, null, admin.getToken()),
   stats: () => request("GET", "/api/admin/stats", null, admin.getToken()),
+  settlements: (page = 1, pageSize = 20) =>
+    request("GET", `/api/admin/settlements?page=${page}&page_size=${pageSize}`, null, admin.getToken()),
+  createSettlement: (data) => request("POST", "/api/admin/settlements", data, admin.getToken()),
+  deleteSettlement: (id) => request("DELETE", `/api/admin/settlements/${id}`, null, admin.getToken()),
 };

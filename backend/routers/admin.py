@@ -4,9 +4,9 @@ from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from auth import check_pin, issue_token, require_parent, revoke_token, set_pin
+from auth import TOKEN_TTL, check_pin, issue_token, require_parent, revoke_token, set_pin
 from database import db
-from schemas import PinChange, PinVerify, TaskCreate, TaskUpdate
+from schemas import PinChange, PinVerify, SettlementCreate, TaskCreate, TaskUpdate
 from utils import make_pinyin, now_iso, today_str, to_cents, to_yuan
 
 router = APIRouter()
@@ -41,9 +41,9 @@ def _row_out(r, done_today: int = 0, total_times: int = 0, total_earned: int = 0
 
 @router.post("/api/auth/verify", tags=["家长后台 · PIN 鉴权"])
 def auth_verify(req: PinVerify):
-    """PIN 校验，成功返回 2 小时有效的家长 token。"""
+    """PIN 校验，成功返回 7 天有效的家长 token（服务重启不掉线）。"""
     check_pin(req.pin)
-    return {"token": issue_token(), "expires_in": 7200}
+    return {"token": issue_token(), "expires_in": TOKEN_TTL}
 
 
 @router.post("/api/auth/logout", tags=["家长后台 · PIN 鉴权"])
@@ -228,6 +228,8 @@ def admin_stats(_t: str = Depends(require_parent)):
         day_map = {r["record_date"]: r["t"] for r in conn.execute(
             "SELECT record_date, SUM(amount) AS t FROM daily_records "
             "WHERE record_date >= ? GROUP BY record_date", (start,))}
+        grand = one("SELECT COALESCE(SUM(amount),0) FROM daily_records")
+        settled = one("SELECT COALESCE(SUM(amount),0) FROM settlements")
         result = {
             "today_total": to_yuan(one(
                 "SELECT COALESCE(SUM(amount),0) FROM daily_records WHERE record_date = ?",
@@ -235,7 +237,9 @@ def admin_stats(_t: str = Depends(require_parent)):
             "month_total": to_yuan(one(
                 "SELECT COALESCE(SUM(amount),0) FROM daily_records WHERE record_date LIKE ?",
                 month + "-%")),
-            "grand_total": to_yuan(one("SELECT COALESCE(SUM(amount),0) FROM daily_records")),
+            "grand_total": to_yuan(grand),
+            "settled_total": to_yuan(settled),
+            "balance": to_yuan(grand - settled),
             "checked_days": one("SELECT COUNT(DISTINCT record_date) FROM daily_records"),
             "active_tasks": one("SELECT COUNT(*) FROM tasks WHERE is_active = 1"),
         }
@@ -245,3 +249,87 @@ def admin_stats(_t: str = Depends(require_parent)):
         last7.append({"date": d, "total": to_yuan(day_map.get(d, 0))})
     result["last7"] = last7
     return result
+
+
+# ---------- 结算（余额 = 累计打卡收益 - 累计结算；转账线下完成，此处仅记账） ----------
+
+def _balance(conn):
+    """返回 (累计收益, 已结算, 当前余额)，单位分。"""
+    grand = conn.execute("SELECT COALESCE(SUM(amount),0) FROM daily_records").fetchone()[0]
+    settled = conn.execute("SELECT COALESCE(SUM(amount),0) FROM settlements").fetchone()[0]
+    return grand, settled, grand - settled
+
+
+@router.get("/api/settlements", tags=["儿童端 · 小金库"])
+def child_settlements(limit: int = Query(20, ge=1, le=100)):
+    """儿童端兑换记录（最新在前）。"""
+    with db() as conn:
+        rows = conn.execute(
+            """SELECT amount, method, note, created_at FROM settlements
+               ORDER BY id DESC LIMIT ?""", (limit,)).fetchall()
+    return {"items": [
+        {"amount": to_yuan(r["amount"]), "method": r["method"],
+         "note": r["note"], "created_at": r["created_at"]}
+        for r in rows
+    ]}
+
+
+@router.get("/api/admin/settlements", tags=["家长后台 · 结算"])
+def admin_settlements(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100),
+                      _t: str = Depends(require_parent)):
+    """结算列表（最新在前）+ 余额汇总。"""
+    with db() as conn:
+        grand, settled, balance = _balance(conn)
+        total = conn.execute("SELECT COUNT(*) FROM settlements").fetchone()[0]
+        rows = conn.execute(
+            """SELECT * FROM settlements ORDER BY id DESC LIMIT ? OFFSET ?""",
+            (page_size, (page - 1) * page_size)).fetchall()
+    return {
+        "grand_total": to_yuan(grand),
+        "settled_total": to_yuan(settled),
+        "balance": to_yuan(balance),
+        "total": total, "page": page, "page_size": page_size,
+        "items": [
+            {"id": r["id"], "amount": to_yuan(r["amount"]), "method": r["method"],
+             "note": r["note"], "balance_before": to_yuan(r["balance_before"]),
+             "balance_after": to_yuan(r["balance_after"]),
+             "created_at": r["created_at"]}
+            for r in rows
+        ],
+    }
+
+
+@router.post("/api/admin/settlements", status_code=201, tags=["家长后台 · 结算"])
+def admin_create_settlement(req: SettlementCreate, _t: str = Depends(require_parent)):
+    """新增结算：记录方式与金额并扣减余额；不能超过当前余额。"""
+    method = req.method.strip()
+    if not method:
+        raise HTTPException(400, "结算方式不能为空")
+    cents = to_cents(req.amount)
+    if cents <= 0:
+        raise HTTPException(400, "结算金额至少 0.01 元")
+    with db() as conn:
+        _, _, balance = _balance(conn)
+        if cents > balance:
+            raise HTTPException(400, f"结算金额不能超过当前余额 ¥{to_yuan(balance)}")
+        cur = conn.execute(
+            """INSERT INTO settlements
+               (amount, method, note, balance_before, balance_after, operator, created_at)
+               VALUES (?, ?, ?, ?, ?, 'parent', ?)""",
+            (cents, method, (req.note or "").strip() or None,
+             balance, balance - cents, now_iso()))
+        new_id = cur.lastrowid
+    return {"id": new_id, "amount": to_yuan(cents), "method": method,
+            "balance": to_yuan(balance - cents)}
+
+
+@router.delete("/api/admin/settlements/{settle_id}", tags=["家长后台 · 结算"])
+def admin_delete_settlement(settle_id: int, _t: str = Depends(require_parent)):
+    """撤销结算（记错时使用）：删除记录，余额自动返还。"""
+    with db() as conn:
+        row = conn.execute("SELECT id FROM settlements WHERE id = ?", (settle_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "结算记录不存在")
+        conn.execute("DELETE FROM settlements WHERE id = ?", (settle_id,))
+        _, _, balance = _balance(conn)
+    return {"status": "revoked", "balance": to_yuan(balance)}

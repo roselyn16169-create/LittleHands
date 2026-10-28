@@ -47,6 +47,25 @@ CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+-- ============ 家长会话 token（持久化到数据库，服务重启不掉线）============
+CREATE TABLE IF NOT EXISTS auth_tokens (
+    token      TEXT PRIMARY KEY,
+    expires_at REAL NOT NULL,                             -- 过期时间戳
+    created_at TEXT NOT NULL
+);
+
+-- ============ 结算记录（余额 = 累计打卡收益 - 累计结算，转账线下完成仅记账）============
+CREATE TABLE IF NOT EXISTS settlements (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    amount         INTEGER NOT NULL CHECK (amount > 0),   -- 分
+    method         TEXT    NOT NULL,                      -- 支付宝/微信/现金/玩具兑换…
+    note           TEXT,                                  -- 备注（如：买了乐高）
+    balance_before INTEGER NOT NULL,                      -- 结算前余额（分）
+    balance_after  INTEGER NOT NULL,                      -- 结算后余额（分）
+    operator       TEXT    NOT NULL DEFAULT 'parent',
+    created_at     TEXT    NOT NULL
+);
 """
 
 # 预置 8 项常见家务（price 单位：分；0.5 元 = 50）

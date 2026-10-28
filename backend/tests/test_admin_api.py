@@ -1,4 +1,4 @@
-"""家长端接口回归测试（第 3 步，21 项断言）。
+"""家长端接口回归测试（30 项断言）。
 
 独立运行前需先启动服务，例如：
     cd backend && ../.venv/bin/uvicorn main:app --port 8399
@@ -102,6 +102,39 @@ check("统计：累计 3.0 元、近 7 天趋势含今日",
 
 s, b = call("POST", "/api/admin/tasks", {"name": "测试", "price": 0.001}, token=TOKEN)
 check("非法单价（<0.01 元）被拒 422", s == 422, f"{s}")
+
+# ===== 结算（v1.1）=====
+s, b = call("POST", "/api/records/submit", {"items": [{"task_id": 2, "quantity": 4}]})
+check("儿童打卡拖地 x4（累计 11 元）", s == 200 and abs(b["today_total"] - 11.0) < 1e-9, f"{s} {b}")
+
+s, b = call("POST", "/api/admin/settlements", {"method": "支付宝", "amount": 5, "note": "买乐高"}, token=TOKEN)
+check("结算 5 元（支付宝）：余额剩 6 元", s == 201 and abs(b["balance"] - 6.0) < 1e-9, f"{s} {b}")
+
+s, b = call("GET", "/api/admin/settlements", token=TOKEN)
+check("结算列表：1 条、已结算 5 元、余额 6 元",
+      s == 200 and len(b["items"]) == 1 and abs(b["settled_total"] - 5.0) < 1e-9
+      and abs(b["balance"] - 6.0) < 1e-9, f"{s} {b}")
+
+s, b = call("GET", "/api/records/summary")
+check("儿童端汇总新增余额字段（balance=6 / settled=5）",
+      s == 200 and abs(b["balance"] - 6.0) < 1e-9 and abs(b["settled_total"] - 5.0) < 1e-9, f"{s} {b}")
+
+s, b = call("POST", "/api/admin/settlements", {"method": "现金", "amount": 100}, token=TOKEN)
+check("超额结算被拒（400）", s == 400, f"{s} {b}")
+
+s, b = call("POST", "/api/admin/settlements", {"method": "玩具兑换", "amount": 6, "note": "小汽车"}, token=TOKEN)
+check("结算 6 元清零余额", s == 201 and abs(b["balance"]) < 1e-9, f"{s} {b}")
+SID = b["id"]
+
+s, b = call("POST", "/api/admin/settlements", {"method": "现金", "amount": 0.5}, token=TOKEN)
+check("余额为 0 时结算被拒（400）", s == 400, f"{s} {b}")
+
+s, b = call("DELETE", f"/api/admin/settlements/{SID}", token=TOKEN)
+check("撤销「玩具兑换」，余额返还 6 元", s == 200 and abs(b["balance"] - 6.0) < 1e-9, f"{s} {b}")
+
+s, b = call("GET", "/api/settlements")
+check("儿童端兑换记录可见（1 条支付宝）",
+      s == 200 and len(b["items"]) == 1 and b["items"][0]["method"] == "支付宝", f"{s} {b}")
 
 s, b = call("PUT", "/api/auth/pin", {"old_pin": "1234", "new_pin": "5678"}, token=TOKEN)
 check("修改 PIN", s == 200, f"{s} {b}")

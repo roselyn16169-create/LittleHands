@@ -69,12 +69,13 @@ setUnauthorizedHandler(() => {
 function switchATab(name) {
   document.querySelectorAll(".admin-tab").forEach((b) =>
     b.classList.toggle("active", b.dataset.atab === name));
-  for (const t of ["stats", "tasks", "logs"]) {
+  for (const t of ["stats", "tasks", "logs", "settle"]) {
     $("atab-" + t).classList.toggle("hidden", t !== name);
   }
   if (name === "stats") loadStats();
   if (name === "tasks") loadTasks();
   if (name === "logs") loadLogs(logPage);
+  if (name === "settle") loadSettle();
 }
 
 document.querySelectorAll(".admin-tab").forEach((b) =>
@@ -308,6 +309,98 @@ async function loadLogs(page = 1) {
 
 $("log-prev").addEventListener("click", () => loadLogs(logPage - 1));
 $("log-next").addEventListener("click", () => loadLogs(logPage + 1));
+
+/* ==================== 结算 ==================== */
+
+const METHODS = ["支付宝", "微信", "现金", "玩具兑换", "零食", "游戏时间", "其他"];
+let curBalance = 0;
+
+async function loadSettle() {
+  const box = $("settle-list");
+  box.innerHTML = `<div class="text-center text-slate-400 py-8">jiā zǎi zhōng · 加载中…</div>`;
+  try {
+    const res = await admin.settlements();
+    curBalance = res.balance;
+    $("set-balance").textContent = fmtMoney(res.balance);
+    $("set-grand").textContent = fmtMoney(res.grand_total);
+    $("set-settled").textContent = fmtMoney(res.settled_total);
+    box.innerHTML = res.items.length ? res.items.map((i) => `
+    <div class="bg-white rounded-2xl shadow px-4 py-3 flex items-center gap-3">
+      <span class="text-3xl">🎁</span>
+      <div class="flex-1 min-w-0">
+        <div class="font-extrabold text-slate-700 truncate">${i.method}${i.note ? ` · ${i.note}` : ""}</div>
+        <div class="text-sm text-slate-400">余额 ¥${fmtMoney(i.balance_before)} → ¥${fmtMoney(i.balance_after)} · ${i.created_at}</div>
+      </div>
+      <div class="text-xl font-black text-indigo-500 shrink-0">−¥${fmtMoney(i.amount)}</div>
+      <button data-undo="${i.id}" class="px-3 py-2 rounded-xl bg-rose-100 text-rose-600 font-bold text-sm active:scale-95 transition shrink-0">撤销</button>
+    </div>`).join("") : `<div class="text-center text-slate-400 py-10">还没有结算记录</div>`;
+  } catch (err) {
+    box.innerHTML = "";
+  }
+}
+
+$("settle-list").addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-undo]");
+  if (!btn) return;
+  if (!confirm("撤销后该笔金额将返还到余额，确认撤销？")) return;
+  try {
+    await admin.deleteSettlement(Number(btn.dataset.undo));
+    toast("已撤销，余额已返还", "success");
+    loadSettle();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+});
+
+function buildMethodChips() {
+  $("sm-methods").innerHTML = METHODS.map((m) =>
+    `<button type="button" data-method="${m}" class="method-chip">${m}</button>`).join("");
+}
+
+function openSettleModal() {
+  buildMethodChips();
+  $("sm-amount").value = "";
+  $("sm-note").value = "";
+  $("sm-balance").textContent = fmtMoney(curBalance);
+  const m = $("settle-modal");
+  m.classList.remove("hidden");
+  m.classList.add("flex");
+}
+
+function closeSettleModal() {
+  const m = $("settle-modal");
+  m.classList.add("hidden");
+  m.classList.remove("flex");
+}
+
+$("btn-new-settle").addEventListener("click", openSettleModal);
+$("sm-cancel").addEventListener("click", closeSettleModal);
+
+$("sm-methods").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-method]");
+  if (!b) return;
+  $("sm-methods").querySelectorAll(".on").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on");
+});
+
+$("sm-save").addEventListener("click", async () => {
+  const chip = $("sm-methods").querySelector(".on");
+  const amount = parseFloat($("sm-amount").value);
+  if (!chip) { toast("请选择结算方式", "error"); return; }
+  if (!(amount >= 0.01)) { toast("请填写正确的金额", "error"); return; }
+  if (amount > curBalance + 1e-9) { toast(`金额不能超过当前余额 ¥${fmtMoney(curBalance)}`, "error"); return; }
+  const payload = { method: chip.dataset.method, amount };
+  const note = $("sm-note").value.trim();
+  if (note) payload.note = note;
+  try {
+    const res = await admin.createSettlement(payload);
+    toast(`结算成功，余额 ¥${fmtMoney(res.balance)}`, "success");
+    closeSettleModal();
+    loadSettle();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+});
 
 /* ==================== 修改 PIN ==================== */
 

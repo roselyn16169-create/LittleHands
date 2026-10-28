@@ -162,12 +162,14 @@ def history(month: str = Query(default=None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
 
 @router.get("/summary")
 def summary():
-    """今日 / 本月 / 累计收益 + 累计打卡天数（小金库页顶部数字）。"""
+    """今日 / 本月 / 累计收益、已结算与当前余额、累计打卡天数（小金库页顶部数字）。"""
     today = today_str()
     month = today[:7]
     with db() as conn:
         def one(sql, *args):
             return conn.execute(sql, args).fetchone()[0]
+        grand = one("SELECT COALESCE(SUM(amount),0) FROM daily_records")
+        settled = one("SELECT COALESCE(SUM(amount),0) FROM settlements")
         return {
             "today_date": today,
             "today_total": to_yuan(one(
@@ -175,7 +177,8 @@ def summary():
             "month_total": to_yuan(one(
                 "SELECT COALESCE(SUM(amount),0) FROM daily_records WHERE record_date LIKE ?",
                 month + "-%")),
-            "grand_total": to_yuan(one(
-                "SELECT COALESCE(SUM(amount),0) FROM daily_records")),
+            "grand_total": to_yuan(grand),
+            "settled_total": to_yuan(settled),
+            "balance": to_yuan(grand - settled),
             "checked_days": one("SELECT COUNT(DISTINCT record_date) FROM daily_records"),
         }

@@ -101,3 +101,15 @@
   outline: 3px solid #6366f1;
   outline-offset: -3px;
 }
+
+/* 结算方式选择 chips */
+.method-chip {
+  padding: 0.45rem 0.95rem;
+  border-radius: 0.9rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .15s;
+}
+.method-chip.on { background: #4f46e5; color: #fff; }

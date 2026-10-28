@@ -37,7 +37,11 @@ async function loadBank() {
     $("bank-today").textContent = fmtMoney(sum.today_total);
     $("bank-month").textContent = fmtMoney(sum.month_total);
     $("bank-days").textContent = sum.checked_days;
+    $("bank-balance").textContent = fmtMoney(sum.balance);
+    $("bank-settled").textContent = "¥" + fmtMoney(sum.settled_total);
+    $("bank-earned").textContent = "¥" + fmtMoney(sum.grand_total);
     renderToday(today);
+    renderSettlements();
     if (!currentMonth) currentMonth = today.date.slice(0, 7);
     await loadHistory();
   } catch (err) {
@@ -60,6 +64,30 @@ function renderToday(today) {
       </div>
       <div class="text-2xl font-black text-pink-500">+${fmtMoney(i.amount)}</div>
     </div>`).join("");
+}
+
+/* ---------- 兑换记录（家长结算后孩子可见） ---------- */
+
+async function renderSettlements() {
+  const box = $("bank-settlement-list");
+  try {
+    const res = await api.settlements();
+    if (!res.items.length) {
+      box.innerHTML = `<div class="py-6 text-center text-gray-300 text-lg">hái méi yǒu · 还没兑换过奖励哦 🎁</div>`;
+      return;
+    }
+    box.innerHTML = res.items.map((i) => `
+    <div class="flex items-center gap-3 px-4 py-3">
+      <span class="text-3xl">🎁</span>
+      <div class="flex-1">
+        <div class="text-lg font-extrabold text-gray-700">${i.method}${i.note ? ` · ${i.note}` : ""}</div>
+        <div class="text-sm text-gray-400">${i.created_at.slice(0, 10)}</div>
+      </div>
+      <div class="text-2xl font-black text-indigo-400">−${fmtMoney(i.amount)}</div>
+    </div>`).join("");
+  } catch (err) {
+    box.innerHTML = "";
+  }
 }
 
 /* ---------- 每日打卡记录 ---------- */

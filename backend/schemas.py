@@ -43,3 +43,10 @@ class TaskUpdate(BaseModel):
     daily_limit: Optional[int] = Field(None, ge=1, le=20)
     sort_order: Optional[int] = Field(None, ge=0)
     is_active: Optional[bool] = None
+
+
+# ---------- 家长端：结算 ----------
+class SettlementCreate(BaseModel):
+    method: str = Field(..., min_length=1, max_length=20, description="支付宝/微信/现金/玩具兑换…")
+    amount: float = Field(..., ge=0.01, le=10000, description="结算金额（元）")
+    note: Optional[str] = Field(None, max_length=100, description="备注，如：买了乐高")
