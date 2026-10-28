@@ -1,6 +1,8 @@
 # 🖐️ LittleHands 小手家务
 
-[![tests](https://github.com/roselyn16169-create/LittleHands/actions/workflows/tests.yml/badge.svg)](https://github.com/roselyn16169-create/LittleHands/actions/workflows/tests.yml)> v1.0.0 · 小手也能做大事——引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
+[![tests](https://github.com/roselyn16169-create/LittleHands/actions/workflows/tests.yml/badge.svg)](https://github.com/roselyn16169-create/LittleHands/actions/workflows/tests.yml)
+
+> v1.3.0 · 小手也能做大事——引导 6-12 岁儿童做家务、赚积分、攒小金库的本地家庭应用
 
 ## ✨ 功能亮点
 
