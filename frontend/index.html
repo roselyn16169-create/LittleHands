@@ -114,6 +114,16 @@
   </div>
 
   <!-- 悬浮提示与奖励动效 -->
+  <!-- 勋章详情弹窗：点击成就墙的勋章查看获取方式 / 获得时间 -->
+  <div id="badge-modal" class="fixed inset-0 z-[65] hidden items-center justify-center bg-black/50 px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 pt-8 text-center relative">
+      <button id="badge-modal-close" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 text-slate-400 text-xl font-bold active:scale-90">✕</button>
+      <div id="bm-icon" class="mx-auto w-24 h-24 rounded-full flex items-center justify-center text-5xl">🏅</div>
+      <div id="bm-name" class="text-2xl font-extrabold text-gray-800 mt-3"></div>
+      <div id="bm-status" class="mt-4 rounded-2xl bg-amber-50 p-4"></div>
+    </div>
+  </div>
+
   <div id="toast-root" class="fixed inset-x-0 top-28 z-50 flex flex-col items-center gap-2 px-4 pointer-events-none"></div>
   <div id="pop-overlay" class="fixed inset-0 z-40 hidden items-center justify-center pointer-events-none">
     <div id="pop-text" class="text-6xl font-black text-emerald-500 drop-shadow-lg"></div>

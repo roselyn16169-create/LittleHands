@@ -91,15 +91,23 @@ async function renderSettlements() {
 
 /* ---------- 我的成就（徽章墙） ---------- */
 
+let badgeCache = [];                     // 供点击弹窗取数据
+const BADGE_UNIT = {                     // 进度单位（按指标）
+  streak: "天", days: "天", money: "元",
+  settles: "次", max_task_times: "次", max_day_kinds: "种",
+};
+
 async function renderBadges() {
   const box = document.getElementById("badge-wall");
   try {
     const res = await api.achievements();
+    badgeCache = res.badges;
     box.innerHTML = res.badges.map((b) => {
       const left = Math.max(b.target - b.current, 0);
       const pct = Math.min(100, Math.round((b.current / b.target) * 100));
       return `
-      <div class="bg-white rounded-2xl shadow p-2 sm:p-3 text-center ${b.unlocked ? "" : "opacity-50 grayscale"}" title="${b.desc}">
+      <div class="bg-white rounded-2xl shadow p-2 sm:p-3 text-center cursor-pointer active:scale-95 transition
+                  ${b.unlocked ? "" : "opacity-50 grayscale"}" data-key="${b.key}" title="${b.desc}">
         <div class="text-3xl sm:text-4xl">${b.icon}</div>
         <div class="text-xs sm:text-sm font-extrabold text-gray-700 mt-1 truncate">${b.name}</div>
         ${b.unlocked
@@ -114,6 +122,59 @@ async function renderBadges() {
     box.innerHTML = "";
   }
 }
+
+/* 点击勋章：弹出获取方式 / 获得时间 */
+function fmtBadgeTime(iso) {
+  if (!iso) return "";
+  const [, m, d] = iso.slice(0, 10).split("-");
+  return `${Number(m)}月${Number(d)}日 ${iso.slice(11, 16)}`;
+}
+
+function openBadgeModal(b) {
+  const icon = $("bm-icon");
+  icon.className = "mx-auto w-24 h-24 rounded-full flex items-center justify-center text-5xl "
+    + (b.unlocked ? "bm-medal-on" : "bm-medal-off");
+  icon.textContent = b.icon;
+  $("bm-name").textContent = b.name;
+
+  if (b.unlocked) {
+    $("bm-status").innerHTML = `
+      <div class="text-emerald-500 font-extrabold text-lg">✓ yǐ huò dé · 已获得</div>
+      <div class="text-gray-400 text-sm mt-1">huò dé shí jiān · 获得时间：${fmtBadgeTime(b.unlocked_at)}</div>
+      <div class="text-gray-400 text-sm mt-0.5">${b.desc}</div>`;
+  } else {
+    const unit = BADGE_UNIT[b.metric] || "次";
+    const left = b.target - b.current;
+    const pct = Math.min(100, Math.round((b.current / b.target) * 100));
+    $("bm-status").innerHTML = `
+      <div class="text-sm text-gray-500 font-bold text-left">rú hé huò dé · 如何获取：${b.desc}</div>
+      <div class="mt-2 h-2 bg-white rounded-full overflow-hidden">
+        <div class="h-full bg-amber-400" style="width:${pct}%"></div>
+      </div>
+      <div class="text-sm text-gray-500 mt-1 text-left">yǐ wán chéng · 已完成 <b>${b.current}</b> / ${b.target} ${unit}</div>
+      <div class="text-lg text-amber-600 font-extrabold mt-0.5">hái chà · 还差 ${left} ${unit}</div>`;
+  }
+  const m = $("badge-modal");
+  m.classList.remove("hidden");
+  m.classList.add("flex");
+}
+
+function closeBadgeModal() {
+  const m = $("badge-modal");
+  m.classList.add("hidden");
+  m.classList.remove("flex");
+}
+
+document.getElementById("badge-wall").addEventListener("click", (e) => {
+  const card = e.target.closest("[data-key]");
+  if (!card) return;
+  const b = badgeCache.find((x) => x.key === card.dataset.key);
+  if (b) openBadgeModal(b);
+});
+$("badge-modal-close").addEventListener("click", closeBadgeModal);
+$("badge-modal").addEventListener("click", (e) => {
+  if (e.target === $("badge-modal")) closeBadgeModal();   // 点遮罩关闭
+});
 
 /* ---------- 每日打卡记录 ---------- */
 

@@ -152,3 +152,12 @@
 
 /* 勋章名称：延迟弹出 */
 .award-name { animation: award-pop .7s .18s cubic-bezier(.34, 1.56, .64, 1) both; }
+
+/* 勋章详情弹窗底盘：已获得（金色发光） / 未获得（灰色） */
+.bm-medal-on {
+  background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fcd34d 55%, #f59e0b 100%);
+  box-shadow: 0 0 18px rgba(252, 211, 77, .6);
+}
+.bm-medal-off {
+  background: radial-gradient(circle at 35% 30%, #f8fafc 0%, #e2e8f0 55%, #cbd5e1 100%);
+}
