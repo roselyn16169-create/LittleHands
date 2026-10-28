@@ -153,11 +153,22 @@
 /* 勋章名称：延迟弹出 */
 .award-name { animation: award-pop .7s .18s cubic-bezier(.34, 1.56, .64, 1) both; }
 
-/* 勋章详情弹窗底盘：已获得（金色发光） / 未获得（灰色） */
-.bm-medal-on {
-  background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fcd34d 55%, #f59e0b 100%);
-  box-shadow: 0 0 18px rgba(252, 211, 77, .6);
+/* 勋章等级底盘：铜（古铜）/ 银（冷银）/ 金（豪华金+光晕）/ 未解锁（灰） */
+.medal-t1 {
+  background: linear-gradient(145deg, #fbd7b0 0%, #d97706 100%);
+  border: 2px solid #92400e;
 }
-.bm-medal-off {
-  background: radial-gradient(circle at 35% 30%, #f8fafc 0%, #e2e8f0 55%, #cbd5e1 100%);
+.medal-t2 {
+  background: linear-gradient(145deg, #f1f5f9 0%, #94a3b8 100%);
+  border: 2px solid #475569;
+  box-shadow: 0 0 10px rgba(100, 116, 139, .55);
+}
+.medal-t3 {
+  background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fcd34d 50%, #f59e0b 100%);
+  border: 2px solid #92400e;
+  box-shadow: 0 0 16px rgba(245, 158, 11, .65), inset 0 0 6px rgba(255, 255, 255, .55);
+}
+.medal-off {
+  background: linear-gradient(145deg, #f1f5f9 0%, #cbd5e1 100%);
+  border: 2px solid #94a3b8;
 }

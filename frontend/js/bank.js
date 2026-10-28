@@ -105,11 +105,14 @@ async function renderBadges() {
     box.innerHTML = res.badges.map((b) => {
       const left = Math.max(b.target - b.current, 0);
       const pct = Math.min(100, Math.round((b.current / b.target) * 100));
+      const plate = b.unlocked ? `medal-t${b.tier}` : "medal-off";   // 铜/银/金等级底盘
       return `
       <div class="bg-white rounded-2xl shadow p-2 sm:p-3 text-center cursor-pointer active:scale-95 transition
-                  ${b.unlocked ? "" : "opacity-50 grayscale"}" data-key="${b.key}" title="${b.desc}">
-        <div class="text-3xl sm:text-4xl">${b.icon}</div>
-        <div class="text-xs sm:text-sm font-extrabold text-gray-700 mt-1 truncate">${b.name}</div>
+                  ${b.unlocked ? "" : "opacity-70"}" data-key="${b.key}" title="${b.desc}">
+        <div class="${plate} w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full flex items-center justify-center">
+          <span class="text-2xl sm:text-3xl">${b.icon}</span>
+        </div>
+        <div class="text-xs sm:text-sm font-extrabold text-gray-700 mt-1.5 truncate">${b.name}</div>
         ${b.unlocked
           ? `<div class="text-[10px] sm:text-xs text-emerald-500 font-bold mt-0.5">✓ yǐ jiě suǒ</div>`
           : `<div class="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -133,7 +136,7 @@ function fmtBadgeTime(iso) {
 function openBadgeModal(b) {
   const icon = $("bm-icon");
   icon.className = "mx-auto w-24 h-24 rounded-full flex items-center justify-center text-5xl "
-    + (b.unlocked ? "bm-medal-on" : "bm-medal-off");
+    + (b.unlocked ? `medal-t${b.tier}` : "medal-off");   // 等级底盘：铜/银/金
   icon.textContent = b.icon;
   $("bm-name").textContent = b.name;
 

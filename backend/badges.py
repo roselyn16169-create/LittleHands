@@ -10,17 +10,17 @@ from utils import now_iso
 # 12 枚徽章：key 唯一标识；metric 对应 evaluate_metrics 的指标；target 为达成阈值
 BADGES = [
     {"key": "streak_3",  "icon": "🔥", "name": "坚持之星·铜", "desc": "连续打卡 3 天",   "metric": "streak",         "target": 3,   "tier": 1, "group": "坚持"},
-    {"key": "streak_7",  "icon": "🔥", "name": "坚持之星·银", "desc": "连续打卡 7 天",   "metric": "streak",         "target": 7,   "tier": 2, "group": "坚持"},
-    {"key": "streak_30", "icon": "🔥", "name": "坚持之星·金", "desc": "连续打卡 30 天",  "metric": "streak",         "target": 30,  "tier": 3, "group": "坚持"},
+    {"key": "streak_7",  "icon": "🌟", "name": "坚持之星·银", "desc": "连续打卡 7 天",   "metric": "streak",         "target": 7,   "tier": 2, "group": "坚持"},
+    {"key": "streak_30", "icon": "🎖️", "name": "坚持之星·金", "desc": "连续打卡 30 天",  "metric": "streak",         "target": 30,  "tier": 3, "group": "坚持"},
     {"key": "days_10",   "icon": "📅", "name": "勤劳 10 天",   "desc": "累计打卡 10 天",  "metric": "days",           "target": 10,  "tier": 1, "group": "勤劳"},
-    {"key": "days_50",   "icon": "📅", "name": "勤劳 50 天",   "desc": "累计打卡 50 天",  "metric": "days",           "target": 50,  "tier": 2, "group": "勤劳"},
+    {"key": "days_50",   "icon": "🏆", "name": "勤劳 50 天",   "desc": "累计打卡 50 天",  "metric": "days",           "target": 50,  "tier": 2, "group": "勤劳"},
     {"key": "task_20",   "icon": "🧹", "name": "单项小能手",   "desc": "同一项家务累计 20 次", "metric": "max_task_times", "target": 20, "tier": 2, "group": "技能"},
     {"key": "kinds_5",   "icon": "⭐", "name": "多面手",       "desc": "单日完成 5 种不同家务", "metric": "max_day_kinds", "target": 5,  "tier": 1, "group": "技能"},
     {"key": "money_10",  "icon": "💰", "name": "小富翁·铜",   "desc": "累计赚取 10 元",  "metric": "money",          "target": 10,  "tier": 1, "group": "财富"},
-    {"key": "money_50",  "icon": "💰", "name": "小富翁·银",   "desc": "累计赚取 50 元",  "metric": "money",          "target": 50,  "tier": 2, "group": "财富"},
-    {"key": "money_100", "icon": "💰", "name": "小富翁·金",   "desc": "累计赚取 100 元", "metric": "money",          "target": 100, "tier": 3, "group": "财富"},
+    {"key": "money_50",  "icon": "💎", "name": "小富翁·银",   "desc": "累计赚取 50 元",  "metric": "money",          "target": 50,  "tier": 2, "group": "财富"},
+    {"key": "money_100", "icon": "👑", "name": "小富翁·金",   "desc": "累计赚取 100 元", "metric": "money",          "target": 100, "tier": 3, "group": "财富"},
     {"key": "settle_1",  "icon": "🎁", "name": "首次兑换",     "desc": "第一次兑换奖励",   "metric": "settles",        "target": 1,   "tier": 1, "group": "兑换"},
-    {"key": "settle_5",  "icon": "🎁", "name": "兑换爱好者",   "desc": "累计兑换 5 次",   "metric": "settles",        "target": 5,   "tier": 2, "group": "兑换"},
+    {"key": "settle_5",  "icon": "🛍️", "name": "兑换爱好者",   "desc": "累计兑换 5 次",   "metric": "settles",        "target": 5,   "tier": 2, "group": "兑换"},
 ]
 
 
