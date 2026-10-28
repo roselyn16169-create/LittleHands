@@ -14,7 +14,7 @@ BADGES = [
     {"key": "streak_30", "icon": "🎖️", "name": "坚持之星·金", "desc": "连续打卡 30 天",  "metric": "streak",         "target": 30,  "tier": 3, "group": "坚持"},
     {"key": "days_10",   "icon": "📅", "name": "勤劳 10 天",   "desc": "累计打卡 10 天",  "metric": "days",           "target": 10,  "tier": 1, "group": "勤劳"},
     {"key": "days_50",   "icon": "🏆", "name": "勤劳 50 天",   "desc": "累计打卡 50 天",  "metric": "days",           "target": 50,  "tier": 2, "group": "勤劳"},
-    {"key": "task_20",   "icon": "🧹", "name": "单项小能手",   "desc": "同一项家务累计 20 次", "metric": "max_task_times", "target": 20, "tier": 2, "group": "技能"},
+    {"key": "task_20",   "icon": "🧹", "name": "单项小能手",   "desc": "同一项家务累计 20 次（从第一天起算，非单日）", "metric": "max_task_times", "target": 20, "tier": 2, "group": "技能"},
     {"key": "kinds_5",   "icon": "⭐", "name": "多面手",       "desc": "单日完成 5 种不同家务", "metric": "max_day_kinds", "target": 5,  "tier": 1, "group": "技能"},
     {"key": "money_10",  "icon": "💰", "name": "小富翁·铜",   "desc": "累计赚取 10 元",  "metric": "money",          "target": 10,  "tier": 1, "group": "财富"},
     {"key": "money_50",  "icon": "💎", "name": "小富翁·银",   "desc": "累计赚取 50 元",  "metric": "money",          "target": 50,  "tier": 2, "group": "财富"},
@@ -40,14 +40,18 @@ def evaluate_metrics(conn) -> dict:
                 break
     money = conn.execute("SELECT COALESCE(SUM(amount),0) FROM daily_records").fetchone()[0] / 100
     settles = conn.execute("SELECT COUNT(*) FROM settlements").fetchone()[0]
-    max_task = conn.execute(
-        "SELECT COALESCE(MAX(c),0) FROM (SELECT SUM(quantity) c FROM daily_records GROUP BY task_id)"
-    ).fetchone()[0]
+    top = conn.execute(
+        """SELECT task_name, task_icon, SUM(quantity) AS c FROM daily_records
+           GROUP BY task_id ORDER BY c DESC LIMIT 1""").fetchone()
+    max_task = top["c"] if top else 0
+    top_task = ({"name": top["task_name"], "icon": top["task_icon"], "count": top["c"]}
+                if top else None)
     max_kinds = conn.execute(
         "SELECT COALESCE(MAX(k),0) FROM (SELECT COUNT(DISTINCT task_id) k FROM daily_records GROUP BY record_date)"
     ).fetchone()[0]
     return {"streak": streak, "days": len(rows), "money": round(money, 2),
-            "settles": settles, "max_task_times": max_task, "max_day_kinds": max_kinds}
+            "settles": settles, "max_task_times": max_task,
+            "max_day_kinds": max_kinds, "top_task": top_task}
 
 
 def check_achievements(conn) -> list:

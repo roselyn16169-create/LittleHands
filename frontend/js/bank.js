@@ -91,7 +91,7 @@ async function renderSettlements() {
 
 /* ---------- 我的成就（徽章墙） ---------- */
 
-let badgeCache = [];                     // 供点击弹窗取数据
+let badgeData = { metrics: {}, badges: [] };   // 供点击弹窗取数据（含指标明细）
 const BADGE_UNIT = {                     // 进度单位（按指标）
   streak: "天", days: "天", money: "元",
   settles: "次", max_task_times: "次", max_day_kinds: "种",
@@ -101,7 +101,7 @@ async function renderBadges() {
   const box = document.getElementById("badge-wall");
   try {
     const res = await api.achievements();
-    badgeCache = res.badges;
+    badgeData = res;
     box.innerHTML = res.badges.map((b) => {
       const left = Math.max(b.target - b.current, 0);
       const pct = Math.min(100, Math.round((b.current / b.target) * 100));
@@ -149,13 +149,18 @@ function openBadgeModal(b) {
     const unit = BADGE_UNIT[b.metric] || "次";
     const left = b.target - b.current;
     const pct = Math.min(100, Math.round((b.current / b.target) * 100));
+    const top = badgeData.metrics.top_task;    // 单项类徽章：显示当前最高的家务
+    const extra = (b.metric === "max_task_times" && top)
+      ? `<div class="text-sm text-gray-500 mt-2 text-left">dāng qián zuì gāo · 当前最高：${top.icon} ${top.name}，累计已完成 <b>${top.count}</b> 次</div>`
+      : "";
     $("bm-status").innerHTML = `
       <div class="text-sm text-gray-500 font-bold text-left">rú hé huò dé · 如何获取：${b.desc}</div>
       <div class="mt-2 h-2 bg-white rounded-full overflow-hidden">
         <div class="h-full bg-amber-400" style="width:${pct}%"></div>
       </div>
-      <div class="text-sm text-gray-500 mt-1 text-left">yǐ wán chéng · 已完成 <b>${b.current}</b> / ${b.target} ${unit}</div>
-      <div class="text-lg text-amber-600 font-extrabold mt-0.5">hái chà · 还差 ${left} ${unit}</div>`;
+      <div class="text-sm text-gray-500 mt-1 text-left">yǐ wán chéng · 已完成 <b>${b.current}</b> / ${b.target} ${unit}（历史累计）</div>
+      <div class="text-lg text-amber-600 font-extrabold mt-0.5">hái chà · 还差 ${left} ${unit}</div>
+      ${extra}`;
   }
   const m = $("badge-modal");
   m.classList.remove("hidden");
@@ -171,7 +176,7 @@ function closeBadgeModal() {
 document.getElementById("badge-wall").addEventListener("click", (e) => {
   const card = e.target.closest("[data-key]");
   if (!card) return;
-  const b = badgeCache.find((x) => x.key === card.dataset.key);
+  const b = badgeData.badges.find((x) => x.key === card.dataset.key);
   if (b) openBadgeModal(b);
 });
 $("badge-modal-close").addEventListener("click", closeBadgeModal);

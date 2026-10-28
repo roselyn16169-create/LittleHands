@@ -61,6 +61,9 @@ check("成就墙返回 12 枚徽章，造数不触发解锁（均未点亮）",
 check("指标实时计算正确（连续 3 天 / 累计 5 天 / 7.5 元）",
       b["metrics"]["streak"] == 3 and b["metrics"]["days"] == 5
       and abs(b["metrics"]["money"] - 7.5) < 1e-9, str(b["metrics"]))
+check("单项进度明细：当前最高为扫地 5 次",
+      b["metrics"]["top_task"]["name"] == "扫地" and b["metrics"]["top_task"]["count"] == 5,
+      str(b["metrics"].get("top_task")))
 
 s, b = call("POST", "/api/records/submit", {"items": [{"task_id": 1, "quantity": 1}]})
 keys = [x["key"] for x in b.get("unlocked", [])]

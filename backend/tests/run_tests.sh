@@ -2,8 +2,8 @@
 # ============================================================
 # LittleHands 小手家务 · 一键回归测试
 # 阶段 A 儿童端接口（12 项） / 阶段 B 家长端接口（33 项）
-# 阶段 C 成就徽章（11 项）     / 阶段 D 页面静态断言（6 项）
-# 共 62 项。详见 docs/TEST_PLAN.md
+# 阶段 C 成就徽章（12 项）     / 阶段 D 页面静态断言（6 项）
+# 共 63 项。详见 docs/TEST_PLAN.md
 # 用法（任意目录）：bash backend/tests/run_tests.sh
 # ============================================================
 set -e
@@ -71,7 +71,7 @@ start_server
 PORT="$PORT" "$PY" tests/test_admin_api.py || RC=1
 stop_server
 
-echo "===== 阶段 C：成就徽章（11 项断言）====="
+echo "===== 阶段 C：成就徽章（12 项断言）====="
 reset_db
 start_server
 PORT="$PORT" CHORE_DB="$DB" "$PY" tests/test_achievements.py || RC=1
@@ -95,7 +95,7 @@ echo "阶段 D：通过 $DP 项，失败 $DF 项"
 [ "$DF" -gt 0 ] && RC=1
 
 if [ "$RC" -eq 0 ]; then
-  echo "🎉 全部回归通过（62 项：A12 + B33 + C11 + D6）"
+  echo "🎉 全部回归通过（63 项：A12 + B33 + C12 + D6）"
 else
   echo "❗ 存在失败用例，请查看上方 ❌ 输出"
 fi
