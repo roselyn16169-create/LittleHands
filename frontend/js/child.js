@@ -10,14 +10,16 @@ import { loadBank } from "./bank.js";
 
 const state = {
   tasks: [],
-  todayTotal: 0,
+  balance: 0,        // 当前余额（我的钱）——孩子唯一主数字
+  todayEarn: 0,      // 今日已赚（弱化小字）
   selected: new Set(),   // 本次勾选的 task_id 集合（每项计 1 次）
 };
 
 const grid = document.getElementById("task-grid");
 const loadingEl = document.getElementById("grid-loading");
 const emptyTip = document.getElementById("empty-tip");
-const todayTotalEl = document.getElementById("today-total");
+const balanceMainEl = document.getElementById("balance-main");
+const todayEarnEl = document.getElementById("today-earn");
 const pendingBox = document.getElementById("pending-preview");
 const pendingEl = document.getElementById("pending-amount");
 const submitBtn = document.getElementById("submit-btn");
@@ -27,9 +29,10 @@ const byId = (id) => state.tasks.find((t) => t.id === id);
 /* ---------- 数据加载 ---------- */
 
 async function loadAll() {
-  const [taskRes, todayRes] = await Promise.all([api.tasks(), api.today()]);
+  const [taskRes, sum] = await Promise.all([api.tasks(), api.summary()]);
   state.tasks = taskRes.tasks;
-  state.todayTotal = todayRes.total;
+  state.balance = sum.balance;
+  state.todayEarn = sum.today_total;
   // 任务可能被家长下架，同步清掉失效勾选
   for (const id of [...state.selected]) {
     if (!byId(id)) state.selected.delete(id);
@@ -93,7 +96,8 @@ function updateSummary() {
     const t = byId(id);
     if (t) pending += t.price;
   }
-  todayTotalEl.textContent = fmtMoney(state.todayTotal);
+  balanceMainEl.textContent = fmtMoney(state.balance);      // 我的钱（主数字）
+  if (todayEarnEl) todayEarnEl.textContent = fmtMoney(state.todayEarn);  // 今天已赚（弱化）
   if (pending > 0) {
     pendingBox.classList.remove("hidden");
     pendingEl.textContent = fmtMoney(pending);

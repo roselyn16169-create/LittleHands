@@ -33,13 +33,11 @@ function shiftMonth(ym, delta) {
 async function loadBank() {
   try {
     const [sum, today] = await Promise.all([api.summary(), api.today()]);
+    $("bank-balance").textContent = fmtMoney(sum.balance);       // 我的钱（主数字）
+    $("bank-today").textContent = fmtMoney(sum.today_total);     // 以下为弱化小字
     $("bank-grand").textContent = fmtMoney(sum.grand_total);
-    $("bank-today").textContent = fmtMoney(sum.today_total);
-    $("bank-month").textContent = fmtMoney(sum.month_total);
+    $("bank-settled").textContent = fmtMoney(sum.settled_total);
     $("bank-days").textContent = sum.checked_days;
-    $("bank-balance").textContent = fmtMoney(sum.balance);
-    $("bank-settled").textContent = "¥" + fmtMoney(sum.settled_total);
-    $("bank-earned").textContent = "¥" + fmtMoney(sum.grand_total);
     renderToday(today);
     renderSettlements();
     renderBadges();
